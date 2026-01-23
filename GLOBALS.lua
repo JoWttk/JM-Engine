@@ -1,0 +1,2 @@
+GameScene = {}
+CurrentScene="Menu"
