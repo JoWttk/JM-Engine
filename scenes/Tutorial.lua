@@ -2,7 +2,7 @@ local Tutorial = {}
 local Player = require("entities.Player")
 local Platform = require("entities.Platform")
 local simpleD = require("engine.DialogTypes.SimpleDialogue")
-local Camera -- Referência para a câmera
+local Camera
 
 function Tutorial.load()
     love.graphics.setDefaultFilter("nearest","nearest")
@@ -19,12 +19,10 @@ function Tutorial.load()
     
     Player.load()
     
-    -- Obter a câmera do Player
     Camera = Player.getCamera()
     
-    -- Configurar a câmera (opcional)
     Camera.smoothness = 6
-    Camera.scale = 1.8 -- Ajuste aqui: 1 = normal, 1.5 = perto, 2 = muito perto, 2.5 = super perto
+    Camera.scale = 1.8
     -- Camera.setBounds(0, 0, 1600, 1200) -- Descomente e ajuste se quiser limites
     
     simpleD.config({
@@ -33,7 +31,9 @@ function Tutorial.load()
         width = 400
     })
     simpleD.showSequence({
-        "Bem-vindo!", "Boa sorte!"
+        CurrentLanguageModule.Tutorial[1],
+        CurrentLanguageModule.Tutorial[2],
+        CurrentLanguageModule.Tutorial[3]
     })
 end
 
@@ -43,22 +43,17 @@ function Tutorial.update(dt)
 end
 
 function Tutorial.draw()
-    -- Verificar se a câmera existe antes de usar
     if Camera then
-        -- Iniciar renderização com câmera (tudo que se move com o mundo)
         Camera.set()
     end
     
-    -- Desenhar elementos do mundo
     Platform.draw()
     Player.draw()
     
     if Camera then
-        -- Finalizar renderização com câmera
         Camera.unset()
     end
     
-    -- Desenhar UI (não afetada pela câmera - fica fixa na tela)
     simpleD.draw()
 end
 
