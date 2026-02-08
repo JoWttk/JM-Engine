@@ -2,7 +2,6 @@ local Scene = require("engine.Scene")
 local Input = require("engine.Input")
 require("globals")
 
--- HOT RELOAD
 lick = require("libs.lick")
 lick.reset = true 
 

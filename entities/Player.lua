@@ -1,5 +1,10 @@
 local Player = {}
+
 local task = require("engine.Utils.task")
+local bar = require("engine.Interface.bar")
+
+lick = require("libs.lick")
+lick.reset = true 
 
 Player.baseSpeed = 200
 Player.speed = 200
@@ -10,6 +15,9 @@ Player.maxStamina = 30
 
 stamina = Player.stamina
 maxStamina = Player.maxStamina
+
+local staminaBar
+local lastStamina
 
 local gravity = 1200
 local jumpVel = -520
@@ -107,6 +115,20 @@ function Player.load()
     
     Camera.load()
 
+    staminaBar = bar.new({
+        label = "STA",
+        fgColor = {0.2, 0.6, 1, 1},
+        bgColor = {0.1, 0.1, 0.1, 1},
+        width = 140,
+        height = 14,
+        padding = 2,
+        tweenDuration = 0.12,
+        showText = true
+    })
+
+    staminaBar:setValue(stamina, maxStamina,0)
+    lastStamina = stamina
+
     task.spawn(function()
         while true do
             if sprinting then
@@ -127,7 +149,17 @@ function Player.load()
 end
 
 function Player.update(dt)
+    if not love.window.hasFocus() then return end
+
     task.step(dt)
+
+    if staminaBar then
+        staminaBar:update(dt)
+        if stamina ~= lastStamina then
+            staminaBar:setValue(stamina, maxStamina)
+            lastStamina = stamina
+        end
+    end
 
     local pos = Components.Position[player]
     local vel = Components.Velocity[player]
@@ -269,10 +301,21 @@ function Player.draw()
             )
         end
     end
+
+    love.graphics.push()
+    love.graphics.origin()
+    Player.drawHUD()
+    love.graphics.pop()
     
     -- love.graphics.setColor(1, 0, 0, 0.3)
     -- love.graphics.rectangle("line", pos.x, pos.y, col.w, col.h)
     -- love.graphics.setColor(1, 1, 1)
+end
+
+function Player.drawHUD()
+    if staminaBar then
+        staminaBar:draw(50, 12)
+    end
 end
 
 function Player.getEntity()
