@@ -32,3 +32,15 @@ end
 function love.keyreleased(key)
     Input.keyreleased(key)
 end
+
+function love.mousepressed(x, y, button)
+    Input.mousepressed(x, y, button)
+end
+
+function love.mousereleased(x, y, button)
+    Input.mousereleased(x, y, button)
+end
+
+function love.mousemoved(x, y)
+    Input.mousemoved(x, y)
+end

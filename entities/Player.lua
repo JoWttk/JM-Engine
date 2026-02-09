@@ -13,14 +13,29 @@ Player.died = false
 Player.stamina = 30
 Player.maxStamina = 30
 
+Player.maxHealth = 100
+Player.health = 100
+
 stamina = Player.stamina
 maxStamina = Player.maxStamina
 
 local staminaBar
 local lastStamina
 
+local healthBar
+local lastHealth
+local shiftblock = false
+
 local gravity = 1200
 local jumpVel = -520
+
+local dashing = false
+local dashTimer = 0
+local dashDir = 1
+
+local DASH_DURATION = 0.15
+local DASH_SPEED = 600
+
 local Entity = require("engine.EntitySystem.Entity")
 local Components = require("engine.EntitySystem.Components")
 local Input = require("engine.Input")
@@ -43,7 +58,7 @@ local function setAnimation(anim, newAnim)
     end
 end
 
-local stats = {
+Player.stats = {
     Attack = 1,
     Defense = 1,
     Power = 1,
@@ -105,6 +120,13 @@ function Player.load()
                     love.graphics.newQuad(96,64,32,32, image),
                 },
                 speed = 0.4
+            },
+
+            dash = {
+                frames = {
+                    love.graphics.newQuad(32, 32, 32, 32, image),
+                },
+                speed = 0.1
             }
         },
 
@@ -115,6 +137,8 @@ function Player.load()
     
     Camera.load()
 
+    local hudFont = love.graphics.newFont("assets/fonts/PressStart2P-Regular.ttf", 15)
+
     staminaBar = bar.new({
         label = "STA",
         fgColor = {0.2, 0.6, 1, 1},
@@ -123,11 +147,25 @@ function Player.load()
         height = 14,
         padding = 2,
         tweenDuration = 0.12,
-        showText = true
+        showText = true,
+        font = hudFont
     })
 
     staminaBar:setValue(stamina, maxStamina,0)
     lastStamina = stamina
+
+    healthBar = bar.new({
+        label = "LIF",
+        fgColor = {0.8, 0.2, 0.2, 1},
+        bgColor = {0.1, 0.1, 0.1, 1},
+        width = 140,
+        height = 14,
+        padding = 2,
+        tweenDuration = 0.12,
+        showText = true,
+        font = hudFont
+    })
+    healthBar:setValue(Player.health, Player.maxHealth,0)
 
     task.spawn(function()
         while true do
@@ -138,6 +176,16 @@ function Player.load()
             end
 
             task.wait(0.15)
+        end
+    end)
+
+    task.spawn(function()
+        while true do
+            if Player.health < Player.maxHealth then
+                Player.health = math.min(Player.maxHealth, Player.health + 1)
+            end
+
+            task.wait(1)
         end
     end)
     
@@ -161,6 +209,14 @@ function Player.update(dt)
         end
     end
 
+    if healthBar then
+        healthBar:update(dt)
+        if Player.health ~= lastHealth then
+            healthBar:setValue(Player.health, Player.maxHealth)
+            lastHealth = Player.health
+        end
+    end
+
     local pos = Components.Position[player]
     local vel = Components.Velocity[player]
     local col = Components.Collider[player]
@@ -168,15 +224,28 @@ function Player.update(dt)
     local anim = Components.Animation[player]
 
     local move = 0
+
+    if dashing then
+        setAnimation(anim, "dash")
+        dashTimer = dashTimer - dt
+        if dashTimer <= 0 then
+            dashing = false
+        end
+    end
+
     if Input.isDown("a") then move = -1 end
     if Input.isDown("d") then move = 1 end
 
-    if Input.isDown("lshift") and stamina > 1 and not SimpleD.isActive() then
+    if shiftblock and not Input.isDown("lshift") then
+        shiftblock = false
+    end
+
+    if Input.isDown("lshift") and stamina > 1 and not shiftblock and not SimpleD.isActive() then
         sprinting = true
     else
         sprinting = false
     end
-    if stamina <= 1 then sprinting = false end
+    if stamina <= 1 then shiftblock=true; sprinting = false end
 
     local speed = Player.baseSpeed
     if sprinting then
@@ -191,10 +260,12 @@ function Player.update(dt)
         end
     end
 
-    print(stamina)
-
     if not SimpleD.isActive() then
-        vel.x = move * speed
+        if dashing then
+            vel.x = dashDir * DASH_SPEED
+        else
+            vel.x = move * speed
+        end
     else
         vel.x = 0
     end
@@ -235,9 +306,27 @@ function Player.update(dt)
     end
 
     if Input.wasPressed("space") and onGround and not SimpleD.isActive() then
+        if stamina < 4 then return end
+        
         vel.y = jumpVel
         onGround = false
+        stamina = stamina - 4
         Camera.startShake(0.1, 1)
+    end
+
+    -- if Input.wasPressed("u") then Player.health = Player.health - 10 end
+
+    if Input.wasPressed("q") and not SimpleD.isActive() and not dashing then
+        if onGround then return end
+        if stamina < 6 then return end
+        stamina = stamina - 6
+
+        dashDir = (move ~= 0) and move or (sprite.flip and -1 or 1)
+
+        dashing = true
+        dashTimer = DASH_DURATION
+
+        Camera.startShake(0.15, 1.5)
     end
 
     if anim then
@@ -314,7 +403,11 @@ end
 
 function Player.drawHUD()
     if staminaBar then
-        staminaBar:draw(50, 12)
+        staminaBar:draw(60, 12)
+    end
+
+    if healthBar then
+        healthBar:draw(60, 50)
     end
 end
 
