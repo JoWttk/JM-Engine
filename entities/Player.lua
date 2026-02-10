@@ -578,6 +578,8 @@ function Player.quit()
         scene=Player.currentMap,
         recentlyJoined = require("scenes."..CURRENT_SCENE).recentlyJoined
     })
+
+    Save.delete("player.txt")
 end
 
 function Player.addStat(stat, amount)

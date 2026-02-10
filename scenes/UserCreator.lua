@@ -17,6 +17,7 @@ local PlayButton
 local vk
 
 local MinText
+local CYT
 
 UC.recentlyJoined = false
 
@@ -29,15 +30,20 @@ function UC.load()
     })
     vk:open("")
 
+    CYT = Text:new(
+        1024/3.5, 768/9, "assets/fonts/PressStart2P-Regular.ttf", 23,
+        "Create Your Character",
+        {1,1,1}, 0, {0.2, 0.6, 0.8}
+    )
+
     PlayButton = Button:new(
-        1024/2-130, 768/1.5, 260, 50,
+        1024/2-130, 768/1.3, 260, 50,
         {0.2, 0.6, 0.8}, "Create User",
         {1,1,1}, "assets/fonts/PressStart2P-Regular.ttf", 18,
         2, {1,1,1},
         function()
             if #vk.text < 1 then
                 vk.text = MinText
-
                 task.delay(1.25,function()
                     if vk.text == MinText then
                         vk.text = ""
@@ -49,6 +55,7 @@ function UC.load()
                 return
             end
 
+            package.loaded["translation." ..CurrentLanguage] = nil
             package.loaded[CurrentLanguageModule] = nil
             CurrentLanguageModule = require("translation." ..CurrentLanguage)
 
@@ -70,6 +77,7 @@ function UC.load()
     )
 
     table.insert(Buttons, PlayButton)
+    table.insert(Buttons, CYT)
 end
 
 function UC.update(dt)
@@ -77,7 +85,9 @@ function UC.update(dt)
     local mouseX, mouseY = love.mouse.getPosition()
 
     for _, button in ipairs(Buttons) do
-        button:update(mouseX, mouseY, Input.wasMousePressed(1))
+        if button.update then
+            button:update(mouseX, mouseY, Input.wasMousePressed(1))
+        end
     end
 
     vk:mousemoved(mouseX, mouseY)
