@@ -4,14 +4,15 @@ local Components = require("engine.EntitySystem.Components")
 
 Platform.list = {}
 
-function Platform.new(x, y, w, h, color, texture)
+function Platform.new(x, y, w, h, color, texture, tag)
     local platform = {
         x = x,
         y = y,
         w = w,
         h = h,
         color = color or { 0.3, 0.3, 0.3 },
-        texture = texture
+        texture = texture,
+        tag = tag or "platform"
     }
     
     table.insert(Platform.list, platform)

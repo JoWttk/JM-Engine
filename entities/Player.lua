@@ -1,10 +1,21 @@
 local Player = {}
 
+require("GLOBALS")
+
+local Save = require("engine.Save")
+local Signal = require("engine.Utils.signal")
+
+Player.onCollision = Signal.new()
+
 local task = require("engine.Utils.task")
 local bar = require("engine.Interface.bar")
+local Scene = require("engine.Scene")
 
 lick = require("libs.lick")
 lick.reset = true 
+
+Player.name = "Player"
+Player.level = 1
 
 Player.baseSpeed = 200
 Player.speed = 200
@@ -65,18 +76,51 @@ Player.stats = {
     Stamina = 1;
 }
 
+function Player.setName(newName)
+    Player.name = newName
+end
+
+function Player.getName()
+    return Player.name
+end
+
+local data
+local plrx,plry
+
 function Player.load()
+    if Save.read("player.txt") then
+        data = Save.read("player.txt")
+        Player.name = data.name or Player.name
+        Player.level = data.level or Player.level
+        Player.stats.Attack = data.Attack or Player.stats.Attack
+        Player.stats.Defense = data.Defense or Player.stats.Defense
+        Player.stats.Power = data.Power or Player.stats.Power
+        Player.stats.Stamina = data.Stamina or Player.stats.Stamina
+    end
+
+    if data then
+        plrx = data.posX or 100
+        plry = data.posY or 100
+    else
+        plrx = 100
+        plry = 100
+    end
+
+    Player._touching = {}
+
     player = Entity.new()
-    Components.Position[player] = { x = 100, y = 100 }
+    Components.Position[player] = { x = plrx, y = plry }
     Components.Velocity[player] = { x = 0, y = 0 }
-    Components.Collider[player] = { w = 32 * 1.4, h = 32 * 1.9}
+    Components.Collider[player] = { w = 32 * 1.4, h = 32 * 1.9 }
     
     local image = love.graphics.newImage("assets/entities/plr.png")
+
     Components.Sprite[player] = {
         image = image,
         flip = false,
         scale = 2.4
     }
+
     Components.Animation[player] = {
         animations = {
             idle = {
@@ -127,7 +171,7 @@ function Player.load()
                     love.graphics.newQuad(32, 32, 32, 32, image),
                 },
                 speed = 0.1
-            }
+            },
         },
 
         current = "idle",
@@ -151,7 +195,7 @@ function Player.load()
         font = hudFont
     })
 
-    staminaBar:setValue(stamina, maxStamina,0)
+    staminaBar:setValue( stamina, maxStamina,0 )
     lastStamina = stamina
 
     healthBar = bar.new({
@@ -165,14 +209,14 @@ function Player.load()
         showText = true,
         font = hudFont
     })
-    healthBar:setValue(Player.health, Player.maxHealth,0)
+    healthBar:setValue( Player.health, Player.maxHealth,0 )
 
     task.spawn(function()
         while true do
             if sprinting then
-                stamina = math.max(0, stamina-1)
+                stamina = math.max( 0, stamina-1 )
             else
-                stamina = math.min(maxStamina,stamina+1)
+                stamina = math.min( maxStamina,stamina+1 )
             end
 
             task.wait(0.15)
@@ -182,7 +226,7 @@ function Player.load()
     task.spawn(function()
         while true do
             if Player.health < Player.maxHealth then
-                Player.health = math.min(Player.maxHealth, Player.health + 1)
+                Player.health = math.min( Player.maxHealth, Player.health + 1 )
             end
 
             task.wait(1)
@@ -198,6 +242,7 @@ end
 
 function Player.update(dt)
     if not love.window.hasFocus() then return end
+    if not player then return end
 
     task.step(dt)
 
@@ -226,7 +271,7 @@ function Player.update(dt)
     local move = 0
 
     if dashing then
-        setAnimation(anim, "dash")
+        setAnimation( anim, "dash" )
         dashTimer = dashTimer - dt
         if dashTimer <= 0 then
             dashing = false
@@ -274,11 +319,20 @@ function Player.update(dt)
     if move > 0 and not SimpleD.isActive() then sprite.flip = false end
 
     vel.y = vel.y + gravity * dt
-
     pos.x = pos.x + vel.x * dt
+
+    local touchingNow = {}
 
     for _, platform in ipairs(Platform.list) do
         if aabb(pos.x, pos.y, col.w, col.h, platform.x, platform.y, platform.w, platform.h) then
+            touchingNow[platform] = true
+
+            if not Player._touching[platform] then
+                Player.onCollision:fire(platform, "enter")
+            else
+                Player.onCollision:fire(platform, "stay")
+            end
+
             if vel.x > 0 then
                 pos.x = platform.x - col.w
             elseif vel.x < 0 then
@@ -294,6 +348,14 @@ function Player.update(dt)
     local onGround = false
     for _, platform in ipairs(Platform.list) do
         if aabb(pos.x, pos.y, col.w, col.h, platform.x, platform.y, platform.w, platform.h) then
+            touchingNow[platform] = true
+
+            if not Player._touching[platform] then
+                Player.onCollision:fire(platform, "enter")
+            else
+                Player.onCollision:fire(platform, "stay")
+            end
+
             if vel.y > 0 then
                 pos.y = platform.y - col.h
                 vel.y = 0
@@ -305,13 +367,33 @@ function Player.update(dt)
         end
     end
 
+    for _, platform in ipairs(Platform.list) do
+        if aabb(pos.x, pos.y, col.w, col.h, platform.x, platform.y, platform.w, platform.h) then
+            touchingNow[platform] = true
+
+            if not Player._touching[platform] then
+                Player.onCollision:fire(platform, "enter")
+            else
+                Player.onCollision:fire(platform, "stay")
+            end
+        end
+    end
+
+    for platform in pairs(Player._touching) do
+        if not touchingNow[platform] then
+            Player.onCollision:fire(platform, "exit")
+        end
+    end
+
+    Player._touching = touchingNow
+
     if Input.wasPressed("space") and onGround and not SimpleD.isActive() then
         if stamina < 4 then return end
         
         vel.y = jumpVel
         onGround = false
         stamina = stamina - 4
-        Camera.startShake(0.1, 1)
+        Camera.startShake( 0.1, 1 )
     end
 
     -- if Input.wasPressed("u") then Player.health = Player.health - 10 end
@@ -326,16 +408,16 @@ function Player.update(dt)
         dashing = true
         dashTimer = DASH_DURATION
 
-        Camera.startShake(0.15, 1.5)
+        Camera.startShake( 0.15, 1.5 )
     end
 
     if anim then
         if not onGround then
-            setAnimation(anim, (vel.y < 0) and "jump" or "fall")
+            setAnimation( anim, (vel.y < 0) and "jump" or "fall" )
         elseif move ~= 0 then
-            setAnimation(anim, "run")
+            setAnimation( anim, "run" )
         else
-            setAnimation(anim, "idle")
+            setAnimation( anim, "idle" )
         end
 
         anim.timer = anim.timer + dt
@@ -354,9 +436,17 @@ function Player.update(dt)
     local centerX = pos.x + col.w / 2
     local centerY = pos.y + col.h / 2
 
-    Camera.follow(centerX, centerY)
+    Camera.follow( centerX, centerY )
     Camera.update(dt)
     Camera.updateShake(dt)
+
+    if Input.wasPressed("r") then
+        Player.die()
+    end
+
+    if pos.y > 1500 then
+        Player.respawn( 100, 100 )
+    end
 end
 
 function Player.draw()
@@ -415,8 +505,86 @@ function Player.getEntity()
     return player
 end
 
+function Player.destroy()
+    Entity.destroy(player)
+end
+
+function Player.takeDamage(amount)
+    Player.health = math.max(0, Player.health - amount)
+    if Player.health <= 0 then
+        Player.died = true
+    end
+end
+
+function Player.die()
+    Scene.change("Dead")
+end
+
+function Player.respawn(x, y)
+    local pos = Components.Position[player]
+    local vel = Components.Velocity[player]
+
+    pos.x = x or 100
+    pos.y = y or 100
+
+    vel.x = 0
+    vel.y = 0
+
+    Player.health = Player.maxHealth
+    stamina = maxStamina
+
+    Player.hang = false
+    dashing = false
+    shiftblock = false
+
+    Camera.startShake(0.2, 2)
+end
+
 function Player.getCamera()
     return Camera
 end
+
+function Player.quit()
+    if not Save.read("player.txt") then
+        return
+    end
+
+    if not Player then return end
+    if not player then return end
+    
+    Save.write("player.txt", {
+        name = Player.name,
+        level = Player.level or 1,
+        Attack = Player.stats.Attack,
+        Defense = Player.stats.Defense,
+        Power = Player.stats.Power,
+        Stamina = Player.stats.Stamina,
+        posX=Components.Position[player].x,
+        posY=Components.Position[player].y,
+        scene=CURRENT_SCENE,
+        recentlyJoined = require("scenes."..CURRENT_SCENE).recentlyJoined
+    })
+end
+
+function Player.addStat(stat, amount)
+    if Player.stats[stat] then
+        Player.stats[stat] = Player.stats[stat] + amount
+    end
+end
+
+function Player.moveTo(x, y)
+    local pos = Components.Position[player]
+    pos.x = x
+    pos.y = y
+end
+
+-- CONNECTIONS
+Player.onCollision:connect(function(platform, eventType)
+    if eventType == "enter" then
+        print("Player colidiu com plataforma:", platform.tag)
+    elseif eventType == "exit" then
+        print("Player saiu da plataforma:", platform.tag)
+    end
+end)
 
 return Player

@@ -2,10 +2,24 @@ local Tutorial = {}
 local Player = require("entities.Player")
 local Platform = require("entities.Platform")
 local simpleD = require("engine.DialogTypes.SimpleDialogue")
+
+local Save = require("engine.Save")
+
 local Camera
+
+Tutorial.recentlyJoined = false
 
 function Tutorial.load()
     love.graphics.setDefaultFilter("nearest","nearest")
+
+    if Save.read("player.txt") then
+        local data = Save.read("player.txt")
+        local recentlyJoined = data.recentlyJoined
+        print("Recently Joined:", recentlyJoined)
+
+        Tutorial.recentlyJoined = recentlyJoined
+    end
+
     Platform.clear()
     
     Platform.new(0, 550, 800, 32, nil, love.graphics.newImage("assets/entities/platformsTextures/tile1.png"))
@@ -23,18 +37,22 @@ function Tutorial.load()
     
     Camera.smoothness = 6
     Camera.scale = 1.8
-    -- Camera.setBounds(0, 0, 1600, 1200) -- Descomente e ajuste se quiser limites
-    
-    simpleD.config({
-        x = 300,
-        y = 15,
-        width = 400
-    })
-    simpleD.showSequence({
-        CurrentLanguageModule.Tutorial[1],
-        CurrentLanguageModule.Tutorial[2],
-        CurrentLanguageModule.Tutorial[3]
-    })
+
+    if not Tutorial.recentlyJoined then
+        Player.moveTo(100, 100)
+
+        simpleD.config({
+            x = 300,
+            y = 15,
+            width = 400
+            })
+
+        simpleD.showSequence(
+            CurrentLanguageModule.Tutorial
+        )
+    end
+    Tutorial.recentlyJoined = true
+    -- Camera.setBounds(0, 0, 1600, 1200) -- Descomente e ajuste se quiser limite
 end
 
 function Tutorial.update(dt)

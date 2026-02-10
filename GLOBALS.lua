@@ -1,7 +1,8 @@
 GameScene = {}
-CurrentScene="Menu"
+OLD_SCENE = "Menu"
+CURRENT_SCENE="Menu"
 
 CurrentLanguage = "pt-br"
-CurrentLanguageModule = require("translation/"..CurrentLanguage)
+CurrentLanguageModule = nil
 
 task = require("engine.Utils.task")

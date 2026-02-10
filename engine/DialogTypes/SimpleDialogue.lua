@@ -31,6 +31,24 @@ local SimpleD = {
     isTyping = false
 }
 
+local function getUTF8Chars(str)
+    local chars = {}
+    local i = 1
+    while i <= #str do
+        local byte = string.byte(str, i)
+        local charLen = 1
+        
+        if byte >= 240 then charLen = 4
+        elseif byte >= 224 then charLen = 3
+        elseif byte >= 192 then charLen = 2
+        end
+        
+        table.insert(chars, string.sub(str, i, i + charLen - 1))
+        i = i + charLen
+    end
+    return chars
+end
+
 function SimpleD.loadFont()
     if not SimpleD.font then
         SimpleD.font = love.graphics.newFont("assets/fonts/PressStart2P-Regular.ttf", 12)
@@ -73,7 +91,8 @@ function SimpleD.advance()
     
     if SimpleD.isTyping then
         SimpleD.displayedText = SimpleD.fullText
-        SimpleD.currentChar = #SimpleD.fullText
+        local chars = getUTF8Chars(SimpleD.fullText)
+        SimpleD.currentChar = #chars
         SimpleD.isTyping = false
         return
     end
@@ -136,10 +155,13 @@ function SimpleD.update(dt)
             SimpleD.textTimer = 0
             SimpleD.currentChar = SimpleD.currentChar + 1
             
-            if SimpleD.currentChar <= #SimpleD.fullText then
-                SimpleD.displayedText = string.sub(SimpleD.fullText, 1, SimpleD.currentChar)
+            local chars = getUTF8Chars(SimpleD.fullText)
+            
+            if SimpleD.currentChar <= #chars then
+                SimpleD.displayedText = table.concat(chars, "", 1, SimpleD.currentChar)
             else
                 SimpleD.isTyping = false
+                SimpleD.displayedText = SimpleD.fullText
             end
         end
     end

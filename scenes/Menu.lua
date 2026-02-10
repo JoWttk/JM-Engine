@@ -4,12 +4,15 @@ require("GLOBALS")
 local Scene = require("engine.Scene")
 local Input = require("engine.Input")
 local Button = require("engine.Interface.button")
+local Save = require("engine.Save")
 local Text = require("engine.Interface.text")
 
 local ChangeLanguage = require("engine.Events.ChangedLanguage").ChangeLanguage
 
 local GameNameText
 local PlayButton
+
+Menu.recentlyJoined = false
 
 function Menu.load()
     PlayButton = Button:new(
@@ -18,7 +21,12 @@ function Menu.load()
         {1,1,1}, "assets/fonts/PressStart2P-Regular.ttf", 24,
         2, {1,1,1},
         function()
-            Scene.change("Tutorial")
+            if Save.read("player.txt") then
+                local data = Save.read("player.txt")
+                Scene.change(data.scene)
+            else
+                Scene.change("UserCreator")
+            end
         end
     )
 
