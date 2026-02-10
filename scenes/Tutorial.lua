@@ -9,6 +9,9 @@ local Camera
 
 Tutorial.recentlyJoined = false
 
+Tutorial.PlayerX = 100
+Tutorial.PlayerY = 100
+
 function Tutorial.load()
     love.graphics.setDefaultFilter("nearest","nearest")
 
@@ -32,6 +35,7 @@ function Tutorial.load()
     Platform.new(700, 300, 30, 250, {0.5, 0.5, 0.8})
     
     Player.load()
+    Player.setMap("Tutorial")
     
     Camera = Player.getCamera()
     

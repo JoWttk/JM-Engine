@@ -7,6 +7,9 @@ local Camera
 
 Parkour.recentlyJoined = false
 
+Parkour.PlayerX = 100
+Parkour.PlayerY = 100
+
 function Parkour.load()
     love.graphics.setDefaultFilter("nearest","nearest")
 
@@ -28,6 +31,8 @@ function Parkour.load()
     Platform.new(650, 300, 30, 250, {0.5, 0.5, 0.8})
     
     Player.load()
+    Player.setMap("Tutorial")
+
     Camera = Player.getCamera()
     Camera.smoothness = 6
     Camera.scale = 1.8

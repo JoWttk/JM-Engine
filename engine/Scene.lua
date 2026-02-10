@@ -6,6 +6,10 @@ function Scene.register(name, scene)
     scenes[name] = scene
 end
 
+function Scene.getCurrentModule()
+    return require("scenes." .. CURRENT_SCENE)
+end
+
 function Scene.load(scene)
     if type(scene) == "string" then
         scene = scenes[scene]

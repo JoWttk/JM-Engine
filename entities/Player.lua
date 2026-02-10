@@ -17,6 +17,8 @@ lick.reset = true
 Player.name = "Player"
 Player.level = 1
 
+Player.currentMap = nil
+
 Player.baseSpeed = 200
 Player.speed = 200
 Player.died = false
@@ -54,6 +56,8 @@ local Platform = require("entities.Platform")
 local SimpleD = require("engine.DialogTypes.SimpleDialogue")
 local Camera = require("engine.EntitySystem.Camera") 
 
+local MapModule
+
 local player
 
 local function aabb(ax, ay, aw, ah, bx, by, bw, bh)
@@ -80,6 +84,14 @@ function Player.setName(newName)
     Player.name = newName
 end
 
+function Player.setMap(map)
+    Player.currentMap = map
+end
+
+function Player.getMap()
+    return Player.currentMap
+end
+
 function Player.getName()
     return Player.name
 end
@@ -102,8 +114,8 @@ function Player.load()
         plrx = data.posX or 100
         plry = data.posY or 100
     else
-        plrx = 100
-        plry = 100
+        plrx = MapModule.PlayerX or 100
+        plry = MapModule.PlayerY or 100
     end
 
     Player._touching = {}
@@ -245,6 +257,8 @@ function Player.update(dt)
     if not player then return end
 
     task.step(dt)
+
+    MapModule = Scene.getCurrentModule()
 
     if staminaBar then
         staminaBar:update(dt)
@@ -561,7 +575,7 @@ function Player.quit()
         Stamina = Player.stats.Stamina,
         posX=Components.Position[player].x,
         posY=Components.Position[player].y,
-        scene=CURRENT_SCENE,
+        scene=Player.currentMap,
         recentlyJoined = require("scenes."..CURRENT_SCENE).recentlyJoined
     })
 end
@@ -579,6 +593,7 @@ function Player.moveTo(x, y)
 end
 
 -- CONNECTIONS
+
 Player.onCollision:connect(function(platform, eventType)
     if eventType == "enter" then
         print("Player colidiu com plataforma:", platform.tag)
