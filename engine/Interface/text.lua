@@ -10,7 +10,7 @@ function InterfaceText:new(x, y, font, fontSize, text, textColor, textStroke, te
     textObj.textStrokeColor = textStrokeColor or {1, 1, 1}
 
     textObj.font = love.graphics.newFont(font, fontSize)
-
+    
     function textObj:draw()
         love.graphics.setFont(self.font)
 

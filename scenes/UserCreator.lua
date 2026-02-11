@@ -60,7 +60,7 @@ function UC.load()
             CurrentLanguageModule = require("translation." ..CurrentLanguage)
 
             Save.write("player.txt", {
-                name = text,
+                name = vk.text,
                 level = 1,
                 Attack = 1,
                 Defense = 1,

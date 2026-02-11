@@ -4,6 +4,7 @@ require("GLOBALS")
 
 local Save = require("engine.Save")
 local Signal = require("engine.Utils.signal")
+local Vec2 = require("engine.Math.Vec2")
 
 Player.onCollision = Signal.new()
 
@@ -28,6 +29,8 @@ Player.maxStamina = 30
 
 Player.maxHealth = 100
 Player.health = 100
+
+Player.currentCollision = nil
 
 stamina = Player.stamina
 maxStamina = Player.maxStamina
@@ -56,9 +59,12 @@ local Platform = require("entities.Platform")
 local SimpleD = require("engine.DialogTypes.SimpleDialogue")
 local Camera = require("engine.EntitySystem.Camera") 
 
+local Collisions = require("entities.PlayerUtils.Collisions")
+
 local MapModule
 
 local player
+local groundPlatform = nil
 
 local function aabb(ax, ay, aw, ah, bx, by, bw, bh)
     return ax < bx + bw and ax + aw > bx and ay < by + bh and ay + ah > by
@@ -347,13 +353,15 @@ function Player.update(dt)
                 Player.onCollision:fire(platform, "stay")
             end
 
-            if vel.x > 0 then
-                pos.x = platform.x - col.w
-            elseif vel.x < 0 then
-                pos.x = platform.x + platform.w
+            if platform.canCollide then
+                if vel.x > 0 then
+                    pos.x = platform.x - col.w
+                elseif vel.x < 0 then
+                    pos.x = platform.x + platform.w
+                end
+                vel.x = 0
+                break
             end
-            vel.x = 0
-            break
         end
     end
 
@@ -370,13 +378,16 @@ function Player.update(dt)
                 Player.onCollision:fire(platform, "stay")
             end
 
-            if vel.y > 0 then
-                pos.y = platform.y - col.h
-                vel.y = 0
-                onGround = true
-            elseif vel.y < 0 then
-                pos.y = platform.y + platform.h
-                vel.y = 0
+            if platform.canCollide then
+                if vel.y > 0 then
+                    pos.y = platform.y - col.h
+                    vel.y = 0
+                    onGround = true
+                    groundPlatform = platform
+                elseif vel.y < 0 then
+                    pos.y = platform.y + platform.h
+                    vel.y = 0
+                end
             end
         end
     end
@@ -401,8 +412,19 @@ function Player.update(dt)
 
     Player._touching = touchingNow
 
+    if Collisions[Player.currentCollision] and Collisions[Player.currentCollision].run then
+        Collisions[Player.currentCollision].run(player)
+    end
+
     if Input.wasPressed("space") and onGround and not SimpleD.isActive() then
         if stamina < 4 then return end
+
+        if groundPlatform then
+            local cfg = Collisions[groundPlatform.tag]
+            if cfg and cfg.jumpable == false then
+                return
+            end
+        end
         
         vel.y = jumpVel
         onGround = false
@@ -499,6 +521,10 @@ function Player.draw()
     love.graphics.origin()
     Player.drawHUD()
     love.graphics.pop()
+
+    if Collisions[Player.currentCollision] and Collisions[Player.currentCollision].draw then
+        Collisions[Player.currentCollision].draw(player, Player.currentCollision)
+    end
     
     -- love.graphics.setColor(1, 0, 0, 0.3)
     -- love.graphics.rectangle("line", pos.x, pos.y, col.w, col.h)
@@ -590,16 +616,31 @@ end
 
 function Player.moveTo(x, y)
     local pos = Components.Position[player]
-    pos.x = x
-    pos.y = y
+    pos.x = x or pos.x
+    pos.y = y or pos.y
+end
+
+function Player.getX()
+    local pos = Components.Position[player]
+    return pos.x
+end
+
+function Player.getY()
+    local pos = Components.Position[player]
+    return pos.y
 end
 
 -- CONNECTIONS
 
 Player.onCollision:connect(function(platform, eventType)
     if eventType == "enter" then
+        Player.currentCollision = platform.tag
         print("Player colidiu com plataforma:", platform.tag)
     elseif eventType == "exit" then
+        if Player.currentCollision == platform.tag then
+            Player.currentCollision = nil
+        end
+
         print("Player saiu da plataforma:", platform.tag)
     end
 end)
