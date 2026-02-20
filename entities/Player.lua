@@ -4,7 +4,6 @@ require("GLOBALS")
 
 local Save = require("engine.Save")
 local Signal = require("engine.Utils.signal")
-local Vec2 = require("engine.Math.Vec2")
 
 Player.onCollision = Signal.new()
 
@@ -32,8 +31,8 @@ Player.health = 100
 
 Player.currentCollision = nil
 
-stamina = Player.stamina
-maxStamina = Player.maxStamina
+local stamina = Player.stamina
+local maxStamina = Player.maxStamina
 
 local staminaBar
 local lastStamina

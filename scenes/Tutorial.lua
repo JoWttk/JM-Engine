@@ -6,6 +6,7 @@ local simpleD = require("engine.DialogTypes.SimpleDialogue")
 local Save = require("engine.Save")
 
 local Camera
+local Background
 
 Tutorial.recentlyJoined = false
 
@@ -22,6 +23,8 @@ function Tutorial.load()
 
         Tutorial.recentlyJoined = recentlyJoined
     end
+
+    Background = love.graphics.newImage("assets/background/test.png")
 
     Platform.clear()
     
@@ -65,6 +68,10 @@ function Tutorial.update(dt)
 end
 
 function Tutorial.draw()
+    love.graphics.draw(Background, 0, -200)
+    
+    simpleD.draw()
+
     if Camera then
         Camera.set()
     end
@@ -75,8 +82,6 @@ function Tutorial.draw()
     if Camera then
         Camera.unset()
     end
-    
-    simpleD.draw()
 end
 
 return Tutorial

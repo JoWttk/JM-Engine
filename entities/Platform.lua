@@ -1,6 +1,4 @@
 local Platform = {}
-local Entity = require("engine.EntitySystem.Entity")
-local Components = require("engine.EntitySystem.Components")
 
 Platform.list = {}
 

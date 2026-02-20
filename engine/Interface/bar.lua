@@ -33,6 +33,7 @@ function Bar.new(params)
 	self.showText = params.showText == nil and true or params.showText
 	self.font = params.font
 	self.label = params.label or ""
+	self.labelStroke = params.labelStroke or 2
 	self.width = params.width or 200
 	self.height = params.height or 20
 	self.padding = params.padding or 2
@@ -110,6 +111,18 @@ function Bar.new(params)
 			local th = love.graphics.getFont():getHeight()
 			love.graphics.setColor(1,1,1,1)
 			love.graphics.print(percentText, x + (w - tw) / 2, y + (h - th) / 2)
+		end
+
+		if self.labelStroke and self.labelStroke > 0 and self.label and #self.label > 0 then
+			if self.font then love.graphics.setFont(self.font) end
+			love.graphics.setColor(0,0,0,1)
+			for dx = -self.labelStroke, self.labelStroke, self.labelStroke do
+				for dy = -self.labelStroke, self.labelStroke, self.labelStroke do
+					if dx ~= 0 or dy ~= 0 then
+						love.graphics.print(self.label, x - 4 - love.graphics.getFont():getWidth(self.label) + dx, y + (h - love.graphics.getFont():getHeight()) / 2 + dy)
+					end
+				end
+			end
 		end
 
 		-- label (left)
