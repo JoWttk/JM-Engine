@@ -64,6 +64,7 @@ local MapModule
 
 local player
 local groundPlatform = nil
+local tasksInitialized = false
 
 local function aabb(ax, ay, aw, ah, bx, by, bw, bh)
     return ax < bx + bw and ax + aw > bx and ay < by + bh and ay + ah > by
@@ -105,6 +106,7 @@ local data
 local plrx,plry
 
 function Player.load()
+    print("[Player] load called. existing player:", tostring(player ~= nil))
     if Save.read("player.txt") then
         data = Save.read("player.txt")
         Player.name = data.name or Player.name
@@ -124,6 +126,19 @@ function Player.load()
     end
 
     Player._touching = {}
+
+    -- If player entity already exists, reuse it instead of recreating everything.
+    if player then
+        local pos = Components.Position[player]
+        if pos then
+            pos.x = plrx or pos.x
+            pos.y = plry or pos.y
+        end
+        Player.health = Player.maxHealth or Player.health
+        stamina = maxStamina
+        print(string.format("[Player] reusing player at (%.2f, %.2f)", pos.x or 0, pos.y or 0))
+        return
+    end
 
     player = Entity.new()
     Components.Position[player] = { x = plrx, y = plry }
@@ -228,27 +243,33 @@ function Player.load()
     })
     healthBar:setValue( Player.health, Player.maxHealth,0 )
 
-    task.spawn(function()
-        while true do
-            if sprinting then
-                stamina = math.max( 0, stamina-1 )
-            else
-                stamina = math.min( maxStamina,stamina+1 )
+    -- Spawn long-running tasks only once to avoid duplicated behaviour
+    if not tasksInitialized then
+        task.spawn(function()
+            while true do
+                if sprinting then
+                    stamina = math.max( 0, stamina-1 )
+                else
+                    stamina = math.min( maxStamina,stamina+1 )
+                end
+
+                task.wait(0.15)
             end
+        end)
 
-            task.wait(0.15)
-        end
-    end)
+        task.spawn(function()
+            while true do
+                if Player.health < Player.maxHealth then
+                    Player.health = math.min( Player.maxHealth, Player.health + 1 )
+                end
 
-    task.spawn(function()
-        while true do
-            if Player.health < Player.maxHealth then
-                Player.health = math.min( Player.maxHealth, Player.health + 1 )
+                task.wait(1)
             end
+        end)
 
-            task.wait(1)
-        end
-    end)
+        tasksInitialized = true
+        print("[Player] tasksInitialized = true")
+    end
     
     -- Opcional: Configurar limites da câmera (ajuste conforme seu mapa)
     -- Camera.setBounds(0, 0, 3200, 2400)
@@ -545,21 +566,25 @@ function Player.getEntity()
 end
 
 function Player.destroy()
+    if not player then return end
     Entity.destroy(player)
+    player = nil
 end
 
 function Player.takeDamage(amount)
     Player.health = math.max(0, Player.health - amount)
     if Player.health <= 0 then
-        Player.died = true
+        Player.die()
     end
 end
 
 function Player.die()
+    Player.died = true
     Scene.change("Dead")
 end
 
 function Player.respawn(x, y)
+    Scene.change(OLD_SCENE)
     local pos = Components.Position[player]
     local vel = Components.Velocity[player]
 
@@ -569,7 +594,7 @@ function Player.respawn(x, y)
     vel.x = 0
     vel.y = 0
 
-    Player.health = Player.maxHealth
+    Player.health = Player.maxHealth or 100
     stamina = maxStamina
 
     Player.hang = false
@@ -634,13 +659,11 @@ end
 Player.onCollision:connect(function(platform, eventType)
     if eventType == "enter" then
         Player.currentCollision = platform.tag
-        print("Player colidiu com plataforma:", platform.tag)
+        print(Player.name.." collided with: ", platform.tag)
     elseif eventType == "exit" then
         if Player.currentCollision == platform.tag then
             Player.currentCollision = nil
         end
-
-        print("Player saiu da plataforma:", platform.tag)
     end
 end)
 

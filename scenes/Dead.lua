@@ -2,9 +2,9 @@ local Dead = {}
 
 require("GLOBALS")
 
-local Scene = require("engine.Scene")
 local Input = require("engine.Input")
 local Text = require("engine.Interface.text")
+local Player=  require("entities.Player")
 
 local Save = require("engine.Save")
 
@@ -20,7 +20,7 @@ end
 
 function Dead.update(dt)
     if Input.wasPressed("r") then
-        Scene.change(OLD_SCENE)
+        Player.respawn(100, 100)
     end
 end
 

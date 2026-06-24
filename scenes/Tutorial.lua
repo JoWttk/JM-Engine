@@ -31,8 +31,8 @@ function Tutorial.load()
     Platform.new(0, 550, 800, 32, nil, love.graphics.newImage("assets/entities/platformsTextures/tile1.png"))
     
     Platform.new(200, 450, 150, 20, {0.8, 0.4, 0.2})
-    Platform.new(400, 350, 120, 20, {0.8, 0.4, 0.2})
-    Platform.new(100, 250, 100, 20, {0.8, 0.4, 0.2},nil, "JoinParkour")
+    Platform.new(400, 350, 120, 20, {0.8, 0.4, 0.2},nil, "JoinParkour")
+    Platform.new(100, 250, 100, 20, {0.8, 0.4, 0.2})
     Platform.new(550, 400, 140, 20, {0.8, 0.4, 0.2})
     
     Platform.new(700, 300, 30, 250, {0.5, 0.5, 0.8})
