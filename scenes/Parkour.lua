@@ -25,7 +25,6 @@ function Parkour.load()
     end
 
     Platform.clear()
-    -- Clear existing enemies to avoid duplicates when reloading the scene
     Enemy.clear()
     MapEnemies = {}
     

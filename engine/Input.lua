@@ -8,6 +8,7 @@ local Input = {
 }
 
 local SimpleD = require("engine.DialogTypes.SimpleDialogue")
+local UI = require("engine.Interface.UI")
 
 function Input.update()
     Input.keysPressed = {}
@@ -63,6 +64,10 @@ end
 
 function Input.getMousePosition()
     return Input.mouseX, Input.mouseY
+end
+
+function Input.getCanvasMousePosition()
+    return UI.getCanvasCoordinates(Input.mouseX, Input.mouseY)
 end
 
 return Input

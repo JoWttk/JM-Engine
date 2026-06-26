@@ -2,16 +2,29 @@ local Scene = require("engine.Scene")
 local Input = require("engine.Input")
 local Player = require("entities.Player")
 require("GLOBALS")
+local UI = require("engine.Interface.UI")
 
 lick = require("libs.lick")
 lick.reset = true 
 
+local Save = require("engine.Save")
+local savedSettings = Save.read("settings.txt")
+if savedSettings and savedSettings.Language then
+    CurrentLanguage = savedSettings.Language
+end
+
 CurrentLanguageModule = require("translation." ..CurrentLanguage)
+
+local gameCanvas
+local baseWidth, baseHeight = 1024, 768
 
 function love.load()
     love.graphics.setDefaultFilter("nearest","nearest")
+    UI.init(baseWidth, baseHeight)
+    gameCanvas = love.graphics.newCanvas(baseWidth, baseHeight)
     
     Scene.register("Menu", require("scenes.Menu"))
+    Scene.register("Settings", require("scenes.Settings"))
     Scene.register("UserCreator", require("scenes.UserCreator"))
     Scene.register("Tutorial", require("scenes.Tutorial"))
     Scene.register("Parkour", require("scenes.Parkour"))
@@ -28,7 +41,27 @@ function love.update(dt)
 end
 
 function love.draw()
+    love.graphics.setCanvas(gameCanvas)
+    love.graphics.clear()
     Scene.draw()
+    
+    love.graphics.setCanvas()
+    
+    local w = love.graphics.getWidth()
+    local h = love.graphics.getHeight()
+    local scaleX = w / baseWidth
+    local scaleY = h / baseHeight
+    local scale = math.min(scaleX, scaleY)
+    
+    local drawWidth = baseWidth * scale
+    local drawHeight = baseHeight * scale
+    local offsetX = (w - drawWidth) / 2
+    local offsetY = (h - drawHeight) / 2
+    
+    love.graphics.setColor(0, 0, 0)
+    love.graphics.rectangle("fill", 0, 0, w, h)
+    love.graphics.setColor(1, 1, 1)
+    love.graphics.draw(gameCanvas, offsetX, offsetY, 0, scale, scale)
 end
 
 function love.keypressed(key)
@@ -61,4 +94,8 @@ end
 
 function love.quit()
     Player.quit()
+end
+
+function love.resize(w, h)
+    if UI and UI.init then UI.init() end
 end

@@ -1,3 +1,5 @@
+local RichText = require("engine.Interface.RichText")
+
 local SimpleD = {
     active = false,
     text = "",
@@ -24,6 +26,7 @@ local SimpleD = {
     indicatorTimer = 0,
     
     font = nil,
+    iconScale = 1.6,
     
     textSpeed = 0.05,
     textTimer = 0,
@@ -183,11 +186,14 @@ function SimpleD.draw()
     love.graphics.rectangle("line", SimpleD.x, SimpleD.y, SimpleD.width, SimpleD.height)
     
     love.graphics.setColor(SimpleD.textColor)
-    love.graphics.printf(
+    RichText.drawWrapped(
         SimpleD.displayedText,
         SimpleD.x + SimpleD.padding,
         SimpleD.y + SimpleD.padding,
-        SimpleD.width - SimpleD.padding * 2
+        SimpleD.width - SimpleD.padding * 2,
+        SimpleD.font:getHeight() * 1.2,
+        1,
+        SimpleD.iconScale
     )
     
     if SimpleD.showIndicator and not SimpleD.isTyping then
@@ -220,6 +226,7 @@ function SimpleD.config(cfg)
     if cfg.indicatorText then SimpleD.indicatorText = cfg.indicatorText end
     if cfg.indicatorBlink ~= nil then SimpleD.indicatorBlink = cfg.indicatorBlink end
     if cfg.textSpeed then SimpleD.textSpeed = cfg.textSpeed end
+    if cfg.iconScale then SimpleD.iconScale = cfg.iconScale end
     
     if cfg.fontSize then
         SimpleD.font = love.graphics.newFont("assets/fonts/PressStart2P-Regular.ttf", cfg.fontSize)

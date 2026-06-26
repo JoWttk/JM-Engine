@@ -265,8 +265,9 @@ function Enemy:draw()
     local hpRatio = self.health / self.maxHealth
     love.graphics.setColor(0.1 + 0.9 * (1 - hpRatio), 0.9 * hpRatio, 0.05)
     love.graphics.rectangle("fill", self.x, self.y - 10, self.width * hpRatio, 5)
+    love.graphics.setColor(1, 1, 1, 1)
 
-    Text:new(self.x, self.y - 25, "assets/fonts/PressStart2P-Regular.ttf", 10, self.name, {1, 1, 1}, 1, {0, 0, 0}):draw()
+    Text:new(self.x, self.y - 25, "assets/fonts/PressStart2P-Regular.ttf", 5, self.name, {1, 1, 1}, 1, {0, 0, 0}):draw()
 end
 
 function Enemy.checkStomp(enemy, player)

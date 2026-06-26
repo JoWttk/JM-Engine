@@ -4,12 +4,15 @@ require("GLOBALS")
 
 local Save = require("engine.Save")
 local Signal = require("engine.Utils.signal")
+local Text = require("engine.Interface.text")
 
 Player.onCollision = Signal.new()
 
 local task = require("engine.Utils.task")
 local bar = require("engine.Interface.bar")
 local Scene = require("engine.Scene")
+
+local Grayscale = require("engine.Shaders.Grayscale")
 
 lick = require("libs.lick")
 lick.reset = true 
@@ -39,6 +42,9 @@ local lastStamina
 
 local healthBar
 local lastHealth
+
+local RespawnText
+
 local shiftblock = false
 
 local gravity = 1200
@@ -127,7 +133,6 @@ function Player.load()
 
     Player._touching = {}
 
-    -- If player entity already exists, reuse it instead of recreating everything.
     if player then
         local pos = Components.Position[player]
         if pos then
@@ -176,7 +181,7 @@ function Player.load()
 
             fall = {
                 frames = {
-                    love.graphics.newQuad(0, 128, 32, 32, image)
+                    love.graphics.newQuad(32, 96, 32, 32, image)
                 },
                 speed = 0.1
             },
@@ -243,7 +248,6 @@ function Player.load()
     })
     healthBar:setValue( Player.health, Player.maxHealth,0 )
 
-    -- Spawn long-running tasks only once to avoid duplicated behaviour
     if not tasksInitialized then
         task.spawn(function()
             while true do
@@ -258,7 +262,7 @@ function Player.load()
         end)
 
         task.spawn(function()
-            while true do
+            while Player.health > 0 do
                 if Player.health < Player.maxHealth then
                     Player.health = math.min( Player.maxHealth, Player.health + 1 )
                 end
@@ -270,7 +274,13 @@ function Player.load()
         tasksInitialized = true
         print("[Player] tasksInitialized = true")
     end
+
+    RespawnText = Text:new(1024/2.5, 768/2, "assets/fonts/PressStart2P-Regular.ttf", 18, "Press R to respawn", {0.8, 0.2, 0.2}, 2.4, {1,1,1})
     
+    for i,v in pairs(Collisions) do
+        v.load(Player)
+    end
+
     -- Opcional: Configurar limites da câmera (ajuste conforme seu mapa)
     -- Camera.setBounds(0, 0, 3200, 2400)
     
@@ -318,18 +328,26 @@ function Player.update(dt)
         end
     end
 
-    if Input.isDown("a") then move = -1 end
-    if Input.isDown("d") then move = 1 end
-
-    if shiftblock and not Input.isDown("lshift") then
-        shiftblock = false
+    if Input.wasPressed("r") and Player.dead == true then
+        print("press R")
+        Player.respawn( 100, 100 )
     end
 
-    if Input.isDown("lshift") and stamina > 1 and not shiftblock and not SimpleD.isActive() then
-        sprinting = true
-    else
-        sprinting = false
+    if not Player.died then
+        if Input.isDown("a") or Input.isDown("left") then move = -1 end
+        if Input.isDown("d") or Input.isDown("right") then move = 1 end
+
+        if shiftblock and not (Input.isDown("lshift") or Input.isDown("rshift")) then
+            shiftblock = false
+        end
+
+        if (Input.isDown("lshift") or Input.isDown("rshift")) and stamina > 1 and not shiftblock and not SimpleD.isActive() then
+            sprinting = true
+        else
+            sprinting = false
+        end
     end
+
     if stamina <= 1 then shiftblock=true; sprinting = false end
 
     local speed = Player.baseSpeed
@@ -436,7 +454,11 @@ function Player.update(dt)
         Collisions[Player.currentCollision].run(player)
     end
 
-    if Input.wasPressed("space") and onGround and not SimpleD.isActive() then
+    if Collisions[Player.currentCollision] and Collisions[Player.currentCollision].update then
+        Collisions[Player.currentCollision].update(dt)
+    end
+
+    if (Input.wasPressed("space") or Input.wasPressed("w") or Input.wasPressed("up")) and onGround and not SimpleD.isActive() and not Player.died then
         if stamina < 4 then return end
 
         if groundPlatform then
@@ -454,7 +476,7 @@ function Player.update(dt)
 
     -- if Input.wasPressed("u") then Player.health = Player.health - 10 end
 
-    if Input.wasPressed("q") and not SimpleD.isActive() and not dashing then
+    if (Input.wasPressed("q") or Input.wasPressed("rctrl")) and not SimpleD.isActive() and not dashing then
         if onGround then return end
         if stamina < 6 then return end
         stamina = stamina - 6
@@ -473,6 +495,7 @@ function Player.update(dt)
         elseif move ~= 0 then
             setAnimation( anim, "run" )
         else
+            if Player.health <= 0 then return end
             setAnimation( anim, "idle" )
         end
 
@@ -495,10 +518,6 @@ function Player.update(dt)
     Camera.follow( centerX, centerY )
     Camera.update(dt)
     Camera.updateShake(dt)
-
-    if Input.wasPressed("r") then
-        Player.die()
-    end
 
     if pos.y > 1500 then
         Player.respawn( 100, 100 )
@@ -525,6 +544,7 @@ function Player.draw()
             local drawX = sprite.flip and (pos.x + col.w - offsetX) or (pos.x + offsetX)
             local drawY = pos.y + offsetY - 8
             
+            love.graphics.setColor(1, 1, 1, 1)
             love.graphics.draw(
                 sprite.image,
                 frame,
@@ -535,6 +555,18 @@ function Player.draw()
                 sprite.scale
             )
         end
+    end
+
+    if Player.died then
+        Grayscale.removeShader()
+
+        love.graphics.setColor(0.7, 0.7, 0.7, 0.8)
+        love.graphics.rectangle("fill", 0, love.graphics.getHeight()/2, love.graphics.getWidth(), love.graphics.getHeight() / 10)
+        love.graphics.setColor(1, 1, 1, 1)
+        
+        RespawnText:draw()
+        
+        Grayscale.applyShader()
     end
 
     love.graphics.push()
@@ -580,7 +612,11 @@ end
 
 function Player.die()
     Player.died = true
-    Scene.change("Dead")
+
+    local anim = Components.Animation[player]
+    if anim then
+        setAnimation(anim, "sit")
+    end
 end
 
 function Player.respawn(x, y)
@@ -653,8 +689,6 @@ function Player.getY()
     local pos = Components.Position[player]
     return pos.y
 end
-
--- CONNECTIONS
 
 Player.onCollision:connect(function(platform, eventType)
     if eventType == "enter" then

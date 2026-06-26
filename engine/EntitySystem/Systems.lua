@@ -3,7 +3,6 @@ local Components = require("engine.EntitySystem.Components")
 local Systems = {}
 
 function Systems.update(dt)
-    -- MOVEMENT
     for e, pos in pairs(Components.Position) do
         local vel = Components.Velocity[e]
         if vel then
@@ -12,7 +11,6 @@ function Systems.update(dt)
         end
     end
 
-    -- ANIMATION
     for e, anim in pairs(Components.Animation) do
         local animData = anim.animations[anim.current]
         if animData and #animData.frames > 1 then
@@ -41,10 +39,8 @@ function Systems.draw()
             if anim then
                 local quad = anim.animations[anim.current].frames[anim.frame]
 
-                -- tamanho do frame (tu usa 32x32)
                 local fw, fh = 32, 32
 
-                -- flip horizontal
                 local sx = sprite.flip and -scale or scale
                 local ox = sprite.flip and (fw * scale) or 0
 
@@ -56,7 +52,6 @@ function Systems.draw()
                     sx, scale
                 )
             else
-                -- sem animação: desenha normal (com scale)
                 local sx = sprite.flip and -scale or scale
                 local ox = sprite.flip and (sprite.image:getWidth() * scale) or 0
                 love.graphics.draw(sprite.image, pos.x + ox, pos.y, 0, sx, scale)

@@ -1,0 +1,5 @@
+- Fix enemies;
+- Make enemies sprite;
+- Change player sprite;
+- Make new levels;
+- Make & fix respawn

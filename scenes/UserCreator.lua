@@ -23,7 +23,9 @@ UC.recentlyJoined = false
 
 function UC.load()
     love.graphics.setDefaultFilter("nearest","nearest")
-    MinText = "Min. 1 character"
+    MinText = (CurrentLanguageModule and CurrentLanguageModule.UserCreator and CurrentLanguageModule.UserCreator.minchar) or "Min. 1 character"
+
+    require("translation.change")
 
     vk = VirtualKeyboard.new({
         maxLen = 12,
@@ -32,7 +34,7 @@ function UC.load()
 
     CYT = Text:new(
         1024/3.5, 768/9, "assets/fonts/PressStart2P-Regular.ttf", 23,
-        "Create Your Character",
+        (CurrentLanguageModule and CurrentLanguageModule.UserCreator and CurrentLanguageModule.UserCreator.title) or "Create Your Character",
         {1,1,1}, 0, {0.2, 0.6, 0.8}
     )
 
@@ -76,13 +78,34 @@ function UC.load()
         end
     )
 
+    if CurrentLanguageModule and CurrentLanguageModule.UserCreator then
+        PlayButton:setText(CurrentLanguageModule.UserCreator.create)
+        if PlayButton.centerHorizontally then PlayButton:centerHorizontally(1024/2) end
+        if CYT and CYT.centerAt then CYT:centerAt(1024/2) end
+    end
+
+    if ChangeLanguage then
+        ChangeLanguage:connect(function(newLang)
+            local mod = require("translation." .. newLang)
+            MinText = (mod.UserCreator and mod.UserCreator.minchar) or MinText
+            if CYT and CYT.setText and mod.UserCreator and mod.UserCreator.title then
+                CYT:setText(mod.UserCreator.title)
+                if CYT.centerAt then CYT:centerAt(1024/2) end
+            end
+            if PlayButton and PlayButton.setText and mod.UserCreator and mod.UserCreator.create then
+                PlayButton:setText(mod.UserCreator.create)
+                if PlayButton.centerHorizontally then PlayButton:centerHorizontally(1024/2) end
+            end
+        end)
+    end
+
     table.insert(Buttons, PlayButton)
     table.insert(Buttons, CYT)
 end
 
 function UC.update(dt)
     task.step(dt)
-    local mouseX, mouseY = love.mouse.getPosition()
+    local mouseX, mouseY = Input.getCanvasMousePosition()
 
     for _, button in ipairs(Buttons) do
         if button.update then

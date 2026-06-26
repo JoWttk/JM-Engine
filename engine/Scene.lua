@@ -134,7 +134,6 @@ function Scene.draw()
         current.draw()
     end
 
-    -- desenha o fade por cima de tudo
     if activeFade then
         activeFade.draw()
     end
