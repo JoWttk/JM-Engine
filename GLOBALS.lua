@@ -1,6 +1,7 @@
 GameScene = {}
 OLD_SCENE = "Menu"
 CURRENT_SCENE="Menu"
+CURRENT_SCENE_MODULE = nil
 
 CurrentLanguage = "pt-br"
 CurrentLanguageModule = nil

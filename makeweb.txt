@@ -1,0 +1,4 @@
+CMD Commands for WEB port.
+
+npx love.js.cmd -c game.love web
+python -m http.server 8000

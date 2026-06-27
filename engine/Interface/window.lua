@@ -23,7 +23,7 @@ local Window = {
 
 function Window.loadFont()
     if not Window.font then
-        Window.font = love.graphics.newFont("assets/fonts/PressStart2P-Regular.ttf", 10)
+        Window.font = love.graphics.newFont("assets/fonts/PixeloidSans-Bold.ttf", 12)
     end
 end
 

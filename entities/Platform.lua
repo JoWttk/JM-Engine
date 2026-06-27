@@ -28,37 +28,33 @@ end
 
 function Platform.draw()
     for _, platform in ipairs(Platform.list) do
-        if platform.visible == false then
-            goto continue
-        end
+        if platform.visible ~= false then 
+            local a = platform.alpha or 1
 
-        local a = platform.alpha or 1
+            if platform.texture then
+                love.graphics.setColor(1, 1, 1, a)
+                platform.texture:setWrap("repeat", "repeat")
 
-        if platform.texture then
-            love.graphics.setColor(1, 1, 1, a)
-            platform.texture:setWrap("repeat", "repeat")
+                local texW = platform.texture:getWidth()
+                local texH = platform.texture:getHeight()
 
-            local texW = platform.texture:getWidth()
-            local texH = platform.texture:getHeight()
+                for px = 0, platform.w - 1, texW do
+                    for py = 0, platform.h - 1, texH do
+                        local drawW = math.min(texW, platform.w - px)
+                        local drawH = math.min(texH, platform.h - py)
 
-            for px = 0, platform.w - 1, texW do
-                for py = 0, platform.h - 1, texH do
-                    local drawW = math.min(texW, platform.w - px)
-                    local drawH = math.min(texH, platform.h - py)
-
-                    local quad = love.graphics.newQuad(0, 0, drawW, drawH, texW, texH)
-                    love.graphics.draw(platform.texture, quad, platform.x + px, platform.y + py)
+                        local quad = love.graphics.newQuad(0, 0, drawW, drawH, texW, texH)
+                        love.graphics.draw(platform.texture, quad, platform.x + px, platform.y + py)
+                    end
                 end
+            else
+                local c = platform.color
+                love.graphics.setColor(c[1], c[2], c[3], a)
+                love.graphics.rectangle("fill", platform.x, platform.y, platform.w, platform.h)
             end
-        else
-            local c = platform.color
-            love.graphics.setColor(c[1], c[2], c[3], a)
-            love.graphics.rectangle("fill", platform.x, platform.y, platform.w, platform.h)
+
+            love.graphics.setColor(1, 1, 1, 1)
         end
-
-        love.graphics.setColor(1, 1, 1, 1)
-
-        ::continue::
     end
 end
 

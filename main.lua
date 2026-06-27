@@ -34,6 +34,7 @@ function love.load()
 end
 
 function love.update(dt)
+    love.window.setTitle("Testing | " .. love.timer.getFPS() .. " FPS")
     if dt > 0.05 then dt = 0.05 end
     
     Scene.update(dt)

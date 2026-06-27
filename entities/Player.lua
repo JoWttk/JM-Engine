@@ -5,14 +5,13 @@ require("GLOBALS")
 local Save = require("engine.Save")
 local Signal = require("engine.Utils.signal")
 local Text = require("engine.Interface.text")
+local Window = require("engine.Interface.window")
 
 Player.onCollision = Signal.new()
 
 local task = require("engine.Utils.task")
 local bar = require("engine.Interface.bar")
 local Scene = require("engine.Scene")
-
-local Grayscale = require("engine.Shaders.Grayscale")
 
 lick = require("libs.lick")
 lick.reset = true 
@@ -33,6 +32,12 @@ Player.maxHealth = 100
 Player.health = 100
 
 Player.currentCollision = nil
+
+local diedFont = nil
+local diedSubFont = nil
+local deathZoom = false
+local deathZoomTarget = 2.4
+local deathZoomSpeed = 1.25
 
 local stamina = Player.stamina
 local maxStamina = Player.maxStamina
@@ -77,7 +82,6 @@ local function aabb(ax, ay, aw, ah, bx, by, bw, bh)
 end
 
 local function setAnimation(anim, newAnim)
-    if SimpleD.isActive() then return end
     if anim.current ~= newAnim then
         anim.current = newAnim
         anim.frame = 1
@@ -150,6 +154,9 @@ function Player.load()
     Components.Velocity[player] = { x = 0, y = 0 }
     Components.Collider[player] = { w = 32 * 1.4, h = 32 * 1.9 }
     
+    diedFont = love.graphics.newFont("assets/fonts/PressStart2P-Regular.ttf", 28)
+    diedSubFont = love.graphics.newFont("assets/fonts/PressStart2P-Regular.ttf", 12)
+
     local image = love.graphics.newImage("assets/entities/plr.png")
 
     Components.Sprite[player] = {
@@ -328,9 +335,10 @@ function Player.update(dt)
         end
     end
 
-    if Input.wasPressed("r") and Player.dead == true then
-        print("press R")
-        Player.respawn( 100, 100 )
+    if Input.wasPressed("r") and Player.died == true then
+        if CURRENT_SCENE_MODULE then
+            Player.respawn( CURRENT_SCENE_MODULE.PlayerX, CURRENT_SCENE_MODULE.PlayerY )
+        end
     end
 
     if not Player.died then
@@ -373,11 +381,21 @@ function Player.update(dt)
         vel.x = 0
     end
 
+    if SimpleD.isActive() then
+        move = 0
+        setAnimation(anim, "idle")
+        sprinting = false
+    end
+
     if move < 0 and not SimpleD.isActive() then sprite.flip = true end
     if move > 0 and not SimpleD.isActive() then sprite.flip = false end
 
     vel.y = vel.y + gravity * dt
     pos.x = pos.x + vel.x * dt
+
+    if deathZoom then
+        Camera.scale = Camera.scale + (deathZoomTarget - Camera.scale) * deathZoomSpeed * dt
+    end
 
     local touchingNow = {}
 
@@ -458,7 +476,7 @@ function Player.update(dt)
         Collisions[Player.currentCollision].update(dt)
     end
 
-    if (Input.wasPressed("space") or Input.wasPressed("w") or Input.wasPressed("up")) and onGround and not SimpleD.isActive() and not Player.died then
+    if (Input.wasPressed("space") or Input.wasPressed("w") or Input.wasPressed("up")) and onGround and not SimpleD.isActive() and not Window.isActive() and not Player.died then
         if stamina < 4 then return end
 
         if groundPlatform then
@@ -520,7 +538,9 @@ function Player.update(dt)
     Camera.updateShake(dt)
 
     if pos.y > 1500 then
-        Player.respawn( 100, 100 )
+        if CURRENT_SCENE_MODULE then
+            Player.respawn( CURRENT_SCENE_MODULE.PlayerX, CURRENT_SCENE_MODULE.PlayerY )
+        end
     end
 end
 
@@ -557,21 +577,10 @@ function Player.draw()
         end
     end
 
-    if Player.died then
-        Grayscale.removeShader()
-
-        love.graphics.setColor(0.7, 0.7, 0.7, 0.8)
-        love.graphics.rectangle("fill", 0, love.graphics.getHeight()/2, love.graphics.getWidth(), love.graphics.getHeight() / 10)
-        love.graphics.setColor(1, 1, 1, 1)
-        
-        RespawnText:draw()
-        
-        Grayscale.applyShader()
-    end
-
     love.graphics.push()
     love.graphics.origin()
     Player.drawHUD()
+    Player.drawDead()
     love.graphics.pop()
 
     if Collisions[Player.currentCollision] and Collisions[Player.currentCollision].draw then
@@ -612,15 +621,47 @@ end
 
 function Player.die()
     Player.died = true
+    deathZoom = true
 
     local anim = Components.Animation[player]
     if anim then
         setAnimation(anim, "sit")
     end
+
+    Camera.startShake(0.8, 4)
+end
+
+function Player.drawDead()
+    if not Player.died then return end
+
+    local sw = love.graphics.getWidth()
+    local sh = love.graphics.getHeight()
+
+    love.graphics.setColor(0, 0, 0, 0.45)
+    love.graphics.rectangle("fill", 0, 0, sw, sh)
+
+    love.graphics.setFont(diedFont)
+    love.graphics.setColor(0.85, 0.1, 0.1, 1)
+    local text = "You Died"
+    local textW = diedFont:getWidth(text)
+    love.graphics.print(text, sw / 2 - textW / 2, sh / 2 - 40)
+
+    love.graphics.setFont(diedSubFont)
+    love.graphics.setColor(0.85, 0.1, 0.1, 1)
+    local subText = "Press R to respawn"
+    local subW = diedSubFont:getWidth(subText)
+    love.graphics.print(subText, sw / 2 - subW / 2, sh / 2 + 10)
+
+    love.graphics.setColor(1, 1, 1, 1)
 end
 
 function Player.respawn(x, y)
-    Scene.change(OLD_SCENE)
+    Player.died = false
+    Scene.change(CURRENT_SCENE)
+
+    deathZoom = false
+    Camera.scale = 1.8
+
     local pos = Components.Position[player]
     local vel = Components.Velocity[player]
 
@@ -630,7 +671,7 @@ function Player.respawn(x, y)
     vel.x = 0
     vel.y = 0
 
-    Player.health = Player.maxHealth or 100
+    Player.health = 100
     stamina = maxStamina
 
     Player.hang = false
@@ -694,6 +735,10 @@ Player.onCollision:connect(function(platform, eventType)
     if eventType == "enter" then
         Player.currentCollision = platform.tag
         print(Player.name.." collided with: ", platform.tag)
+
+        if Collisions[Player.currentCollision] and Collisions[Player.currentCollision].load then
+            Collisions[Player.currentCollision].load(Player)
+        end
     elseif eventType == "exit" then
         if Player.currentCollision == platform.tag then
             Player.currentCollision = nil

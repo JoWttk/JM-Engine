@@ -38,12 +38,6 @@ function Parkour.load()
     Platform.new(650, 300, 30, 250, {0.5, 0.5, 0.8})
 
     MapEnemies[#MapEnemies + 1] = Enemy:new("stomper", 400, 500, { patrolDist = 200, speed = 120 })
-
-    for i, enemy in ipairs(MapEnemies) do
-        enemy.onDied:connect(function()
-            print("ng i died " .. enemy.name)
-        end)
-    end
     
     Player.load()
     Player.setMap("Tutorial")

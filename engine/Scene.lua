@@ -107,6 +107,12 @@ function Scene.change(name, doFade)
         current = scene
         OLD_SCENE = CURRENT_SCENE
         CURRENT_SCENE = name
+
+        if CURRENT_SCENE_MODULE then 
+            package.loaded[CURRENT_SCENE_MODULE] = nil
+        end
+        CURRENT_SCENE_MODULE = require("scenes." .. CURRENT_SCENE)
+
         if current.load then current.load() end
     end
 

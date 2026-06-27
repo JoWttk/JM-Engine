@@ -4,6 +4,8 @@ local Scene = require("engine.Scene")
 local Input = require("engine.Input")
 local Components = require("engine.EntitySystem.Components")
 local RichText = require("engine.Interface.RichText")
+
+local SimpleD = require("engine.DialogTypes.SimpleDialogue")
 local Window = require("engine.Interface.window")
 
 local AllImages = {
@@ -18,7 +20,7 @@ local collisions = {
 
         load = function(player)
             Window.config({
-                offsetX = player.getX() / 3,
+                offsetX = 25,
                 offsetY = -50,
                 maxWidth = 300
             })
@@ -40,6 +42,7 @@ local collisions = {
                     Window.close()
                     currentShowingWindow = nil
                 end
+
                 return 
             end
 
@@ -47,10 +50,34 @@ local collisions = {
                 Window.show("Press {SPACE} to join parkour!")
                 currentShowingWindow = "JoinParkour"
             end
-            
             Window.draw()
+        end
+    },
+    ["StomperExplain"] = {
+        jumpable = false,
 
-            -- if icons.SPACE then print("JJ") end
+        load = function(player)
+            SimpleD.config({
+                x = 300,
+                y = love.graphics.getHeight() - 180,
+                width = 400
+            })
+        end,
+
+        draw = function(player, currentCollision)
+            if currentCollision ~= "StomperExplain" then
+                if currentShowingWindow == "StomperExplain" then
+                    SimpleD.close()
+                    currentShowingWindow = nil
+                end
+                
+                return
+            end
+
+            if currentShowingWindow ~= "StomperExplain" then
+                SimpleD.showSequence(CurrentLanguageModule.Tutorial.StomperExplain)
+                currentShowingWindow = "StomperExplain"
+            end
         end
     }
 }

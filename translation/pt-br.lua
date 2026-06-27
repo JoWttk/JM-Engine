@@ -33,7 +33,12 @@ Texts.Tutorial = {
     [2] = "Aqui você irá passar agora pelo tutorial do jogo",
     [3] = "Para se mover para os lados aperte {A} e {D}, e para correr segure {SHIFT}",
     [4] = "Para pular aperte {SPACE} e para dar um dash aperte {Q}",
-    [5] = "Cuidado com os inimigos e armadilhas, e boa sorte!"
+    [5] = "Cuidado com os inimigos e armadilhas, e boa sorte!",
+
+    ["StomperExplain"] = {
+        "Stomper é um inimigo que anda de um lado para o outro, e se você pular em cima dele, ele irá morrer...",
+        "Mas não se engane, ao encostar nele, você morrerá instanteamente."
+    }
 }
 
 Texts.UserCreator = {
