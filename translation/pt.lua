@@ -1,8 +1,7 @@
 local Texts = {}
-
 local Player = require("entities.Player")
 
-Texts.Type = "PT-BR"
+Texts.Type = "PT"
 
 Texts.Menu = {
     [1] = "Jogar",
@@ -29,11 +28,12 @@ Texts.Settings = {
 }
 
 Texts.Tutorial = {
-    [1] = "Olá, " ..Player.getName() .. "! Bem-vindo ao Untitled game",
-    [2] = "Aqui você irá passar agora pelo tutorial do jogo",
-    [3] = "Para se mover para os lados aperte {A} e {D}, e para correr segure {SHIFT}",
-    [4] = "Para pular aperte {SPACE} e para dar um dash aperte {Q}",
-    [5] = "Cuidado com os inimigos e armadilhas, e boa sorte!",
+    [1] = "Bem-vindo, " .. Player.getName() .. "!",
+    [2] = "Vamos aprender o básico antes de começar sua aventura.",
+    [3] = "Use {A} ou {LEFT} para andar para a esquerda.",
+    [4] = "Use {D} ou {RIGHT} para andar para a direita.",
+    [5] = "Pressione {SPACE} para pular e {Q} para dar um dash.",
+    [6] = "Agora é com você. Boa sorte!",
 
     ["StomperExplain"] = {
         "Stomper é um inimigo que anda de um lado para o outro, e se você pular em cima dele, ele irá morrer...",

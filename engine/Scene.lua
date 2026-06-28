@@ -96,7 +96,7 @@ function Scene.transition(outTime, midFn, inTime, endFn)
     end)
 end
 
-function Scene.change(name, doFade)
+function Scene.change(name, doFade, callback)
     local scene = scenes[name]
     if not scene then return end
 
@@ -104,6 +104,8 @@ function Scene.change(name, doFade)
     Player.currentCollision = nil
 
     local function changeNow()
+        if callback then callback() end
+        
         current = scene
         OLD_SCENE = CURRENT_SCENE
         CURRENT_SCENE = name

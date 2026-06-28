@@ -73,6 +73,7 @@ local function getIconImage(name)
     if name == "SPACE" or name == "SHIFT" then
         return key_icons_extra
     end
+    
     return key_icons
 end
 

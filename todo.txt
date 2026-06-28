@@ -3,3 +3,4 @@
 - Change player sprite;
 - Make new levels;
 - Make & fix respawn
+- Change resolution: 836x470

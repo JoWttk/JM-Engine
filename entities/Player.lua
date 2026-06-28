@@ -116,7 +116,6 @@ local data
 local plrx,plry
 
 function Player.load()
-    print("[Player] load called. existing player:", tostring(player ~= nil))
     if Save.read("player.txt") then
         data = Save.read("player.txt")
         Player.name = data.name or Player.name
@@ -145,7 +144,7 @@ function Player.load()
         end
         Player.health = Player.maxHealth or Player.health
         stamina = maxStamina
-        print(string.format("[Player] reusing player at (%.2f, %.2f)", pos.x or 0, pos.y or 0))
+        
         return
     end
 
@@ -283,10 +282,6 @@ function Player.load()
     end
 
     RespawnText = Text:new(1024/2.5, 768/2, "assets/fonts/PressStart2P-Regular.ttf", 18, "Press R to respawn", {0.8, 0.2, 0.2}, 2.4, {1,1,1})
-    
-    for i,v in pairs(Collisions) do
-        v.load(Player)
-    end
 
     -- Opcional: Configurar limites da câmera (ajuste conforme seu mapa)
     -- Camera.setBounds(0, 0, 3200, 2400)
@@ -328,7 +323,7 @@ function Player.update(dt)
     local move = 0
 
     if dashing then
-        setAnimation( anim, "dash" )
+        setAnimation(anim, "dash")
         dashTimer = dashTimer - dt
         if dashTimer <= 0 then
             dashing = false
@@ -337,7 +332,7 @@ function Player.update(dt)
 
     if Input.wasPressed("r") and Player.died == true then
         if CURRENT_SCENE_MODULE then
-            Player.respawn( CURRENT_SCENE_MODULE.PlayerX, CURRENT_SCENE_MODULE.PlayerY )
+            Player.respawn(CURRENT_SCENE_MODULE.PlayerX, CURRENT_SCENE_MODULE.PlayerY)
         end
     end
 
@@ -356,19 +351,14 @@ function Player.update(dt)
         end
     end
 
-    if stamina <= 1 then shiftblock=true; sprinting = false end
+    if stamina <= 1 then shiftblock = true; sprinting = false end
 
     local speed = Player.baseSpeed
     if sprinting then
-        if anim.animations[anim.current]=="run" then
-            anim.animations[anim.current].speed =anim.animations[anim.current].runSpeed
+        if anim.animations[anim.current] == "run" then
+            anim.animations[anim.current].speed = anim.animations[anim.current].runSpeed
         end
-
         speed = speed * 1.6
-    else
-        if anim.animations[anim.current]=="run" then
-            anim.animations[anim.current].speed =anim.animations[anim.current].speed
-        end
     end
 
     if not SimpleD.isActive() then
@@ -399,15 +389,20 @@ function Player.update(dt)
 
     local touchingNow = {}
 
+    local function processPlatform(platform)
+        if touchingNow[platform] then return end
+        touchingNow[platform] = true
+
+        if not Player._touching[platform] then
+            Player.onCollision:fire(platform, "enter")
+        else
+            Player.onCollision:fire(platform, "stay")
+        end
+    end
+
     for _, platform in ipairs(Platform.list) do
         if aabb(pos.x, pos.y, col.w, col.h, platform.x, platform.y, platform.w, platform.h) then
-            touchingNow[platform] = true
-
-            if not Player._touching[platform] then
-                Player.onCollision:fire(platform, "enter")
-            else
-                Player.onCollision:fire(platform, "stay")
-            end
+            processPlatform(platform)
 
             if platform.canCollide then
                 if vel.x > 0 then
@@ -426,13 +421,7 @@ function Player.update(dt)
     local onGround = false
     for _, platform in ipairs(Platform.list) do
         if aabb(pos.x, pos.y, col.w, col.h, platform.x, platform.y, platform.w, platform.h) then
-            touchingNow[platform] = true
-
-            if not Player._touching[platform] then
-                Player.onCollision:fire(platform, "enter")
-            else
-                Player.onCollision:fire(platform, "stay")
-            end
+            processPlatform(platform)
 
             if platform.canCollide then
                 if vel.y > 0 then
@@ -448,18 +437,6 @@ function Player.update(dt)
         end
     end
 
-    for _, platform in ipairs(Platform.list) do
-        if aabb(pos.x, pos.y, col.w, col.h, platform.x, platform.y, platform.w, platform.h) then
-            touchingNow[platform] = true
-
-            if not Player._touching[platform] then
-                Player.onCollision:fire(platform, "enter")
-            else
-                Player.onCollision:fire(platform, "stay")
-            end
-        end
-    end
-
     for platform in pairs(Player._touching) do
         if not touchingNow[platform] then
             Player.onCollision:fire(platform, "exit")
@@ -469,12 +446,14 @@ function Player.update(dt)
     Player._touching = touchingNow
 
     if Collisions[Player.currentCollision] and Collisions[Player.currentCollision].run then
-        Collisions[Player.currentCollision].run(player)
+        Collisions[Player.currentCollision].run(Player)
     end
 
     if Collisions[Player.currentCollision] and Collisions[Player.currentCollision].update then
         Collisions[Player.currentCollision].update(dt)
     end
+
+    if Input.wasPressed("k") then print(Window.isActive()) end
 
     if (Input.wasPressed("space") or Input.wasPressed("w") or Input.wasPressed("up")) and onGround and not SimpleD.isActive() and not Window.isActive() and not Player.died then
         if stamina < 4 then return end
@@ -485,14 +464,12 @@ function Player.update(dt)
                 return
             end
         end
-        
+
         vel.y = jumpVel
         onGround = false
         stamina = stamina - 4
-        Camera.startShake( 0.1, 1 )
+        Camera.startShake(0.1, 1)
     end
-
-    -- if Input.wasPressed("u") then Player.health = Player.health - 10 end
 
     if (Input.wasPressed("q") or Input.wasPressed("rctrl")) and not SimpleD.isActive() and not dashing then
         if onGround then return end
@@ -504,17 +481,17 @@ function Player.update(dt)
         dashing = true
         dashTimer = DASH_DURATION
 
-        Camera.startShake( 0.15, 1.5 )
+        Camera.startShake(0.15, 1.5)
     end
 
     if anim then
         if not onGround then
-            setAnimation( anim, (vel.y < 0) and "jump" or "fall" )
+            setAnimation(anim, (vel.y < 0) and "jump" or "fall")
         elseif move ~= 0 then
-            setAnimation( anim, "run" )
+            setAnimation(anim, "run")
         else
             if Player.health <= 0 then return end
-            setAnimation( anim, "idle" )
+            setAnimation(anim, "idle")
         end
 
         anim.timer = anim.timer + dt
@@ -533,13 +510,13 @@ function Player.update(dt)
     local centerX = pos.x + col.w / 2
     local centerY = pos.y + col.h / 2
 
-    Camera.follow( centerX, centerY )
+    Camera.follow(centerX, centerY)
     Camera.update(dt)
     Camera.updateShake(dt)
 
     if pos.y > 1500 then
         if CURRENT_SCENE_MODULE then
-            Player.respawn( CURRENT_SCENE_MODULE.PlayerX, CURRENT_SCENE_MODULE.PlayerY )
+            Player.respawn(CURRENT_SCENE_MODULE.PlayerX, CURRENT_SCENE_MODULE.PlayerY)
         end
     end
 end
@@ -732,14 +709,23 @@ function Player.getY()
 end
 
 Player.onCollision:connect(function(platform, eventType)
-    if eventType == "enter" then
-        Player.currentCollision = platform.tag
-        print(Player.name.." collided with: ", platform.tag)
 
-        if Collisions[Player.currentCollision] and Collisions[Player.currentCollision].load then
-            Collisions[Player.currentCollision].load(Player)
+    if eventType == "enter" then
+        print("I joined ".. platform.tag)
+
+        Player.currentCollision = platform.tag
+
+        if Collisions[platform.tag] and Collisions[platform.tag].load then
+            print("loaded collision")
+            Collisions[platform.tag].load(Player)
         end
     elseif eventType == "exit" then
+        print("I left " .. platform.tag)
+        if Collisions[platform.tag] and Collisions[platform.tag].unload then
+            print("unloaded collision")
+            Collisions[platform.tag].unload(Player)
+        end
+
         if Player.currentCollision == platform.tag then
             Player.currentCollision = nil
         end

@@ -28,11 +28,17 @@ Texts.Settings = {
 }
 
 Texts.Tutorial = {
-    [1] = "Hello, " ..Player.getName() .. "! Welcome to Untitled game",
-    [2] = "Here you will go through the game's tutorial",
-    [3] = "To move left and right press A and D, and to run hold SHIFT",
-    [4] = "To jump press space and to dash press Q",
-    [5] = "Beware of enemies and traps, and good luck!"
+    [1] = "Welcome, " .. Player.getName() .. "!",
+    [2] = "You will now go through the basic tutorial.",
+    [3] = "Press {A} or {LEFT} to move left.",
+    [4] = "Press {D} or {RIGHT} to move right.",
+    [5] = "Press {SPACE} to jump and {Q} to dash.",
+    [6] = "Be careful, and have fun!",
+
+    ["StomperExplain"] = {
+        "The Stomper is an enemy that patrols back and forth. If you jump on its head, you'll defeat it...",
+        "But don't be fooled—if you touch it, you'll die instantly."
+    }
 }
 
 Texts.UserCreator = {

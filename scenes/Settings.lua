@@ -1,5 +1,5 @@
 local Settings = {
-    Language = "pt-br", -- en, pt-br
+    Language = "en", -- en, pt
     Controller = "keyboard", -- keyboard, gamepad
     Volume = 100, -- 0 to 100
     Difficulty = "normal" -- easy, normal, hard
@@ -13,7 +13,7 @@ local Save = require("engine.Save")
 local Text = require("engine.Interface.text")
 local Languages = {
     en = require("translation.en"),
-    ["pt-br"] = require("translation.pt-br")
+    pt = require("translation.pt")
 }
 
 local changeLanguage = require("translation.change")
@@ -41,7 +41,7 @@ function Settings.load()
         Settings.Volume = data.Volume or 100
         Settings.Difficulty = data.Difficulty or "normal"
     end
-    local T = Languages[Settings.Language] or Languages["pt-br"]
+    local T = Languages[Settings.Language] or Languages["pt"]
     ST = Text:new(1024/2 - 120, 30, "assets/fonts/PressStart2P-Regular.ttf", 28, T.Settings[1], {1,1,1}, 2, {0.2, 0.6, 0.8})
 
     ChangeLanguageButton = Button:new(
@@ -51,7 +51,7 @@ function Settings.load()
         2, {1,1,1},
         function()
             if Settings.Language == "en" then
-                Settings.Language = "pt-br"
+                Settings.Language = "pt"
             else
                 Settings.Language = "en"
             end
@@ -59,7 +59,7 @@ function Settings.load()
             Settings.save()
 
             if ChangeLanguage then ChangeLanguage:fire(Settings.Language) end
-            local newT = Languages[Settings.Language] or Languages["pt-br"]
+            local newT = Languages[Settings.Language] or Languages["pt"]
             
             ChangeLanguageButton:setText(newT.Settings[2] .. Settings.Language:upper())
             ChangeControllerButton:setText(newT.Settings[3] .. Settings.Controller)
@@ -106,7 +106,7 @@ function Settings.load()
             else
                 Settings.Volume = math.min(100, Settings.Volume + 10)
             end
-            ChangeVolumeButton:setText((Languages[Settings.Language] or Languages["pt-br"]).Settings[4] .. Settings.Volume)
+            ChangeVolumeButton:setText((Languages[Settings.Language] or Languages["pt"]).Settings[4] .. Settings.Volume)
             Settings.save()
         end
     )
@@ -124,7 +124,7 @@ function Settings.load()
             else
                 Settings.Difficulty = "easy"
             end
-            ChangeDifficultyButton:setText((Languages[Settings.Language] or Languages["pt-br"]).Settings[5] .. Settings.Difficulty)
+            ChangeDifficultyButton:setText((Languages[Settings.Language] or Languages["pt"]).Settings[5] .. Settings.Difficulty)
             Settings.save()
         end
     )
@@ -154,7 +154,7 @@ function Settings.load()
 
     if ChangeLanguage then
         ChangeLanguage:connect(function(newLang)
-            local T = Languages[newLang] or Languages["pt-br"]
+            local T = Languages[newLang] or Languages["pt"]
             
             ChangeLanguageButton:setText(T.Settings[2] .. (newLang:upper()))
             ChangeControllerButton:setText(T.Settings[3] .. Settings.Controller)

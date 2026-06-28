@@ -1,7 +1,8 @@
+require("GLOBALS")
+
 local Scene = require("engine.Scene")
 local Input = require("engine.Input")
 local Player = require("entities.Player")
-require("GLOBALS")
 local UI = require("engine.Interface.UI")
 
 lick = require("libs.lick")
@@ -31,6 +32,7 @@ function love.load()
     Scene.register("Dead", require("scenes.Dead"))
     
     Scene.change("Menu")
+    Web.init()
 end
 
 function love.update(dt)

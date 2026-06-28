@@ -59,7 +59,7 @@ function Tutorial.load()
     -- DIALOGUE
     Platform.new(1000, 200, 30, 500, nil, nil, "StomperExplain", false, 0, false)
 
-    -- SPAWN
+    -- SPAWN 
     Platform.new(100, 400, 100, 20, {0.8, 0.4, 0.2})
 
     -- FLAG
