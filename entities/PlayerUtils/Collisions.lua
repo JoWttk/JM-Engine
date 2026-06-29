@@ -25,6 +25,8 @@ local collisions = {
             if not skipped then skipped = false end
 
             local function leave()
+                SimpleD.close()
+                
                 Scene.change("Parkour", true, function()
                     Window.close()
                 end)

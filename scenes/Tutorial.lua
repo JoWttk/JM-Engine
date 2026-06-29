@@ -41,7 +41,7 @@ function Tutorial.load()
     Tile1 = love.graphics.newImage("assets/entities/platformsTextures/tile1.png")
     Tile2 = love.graphics.newImage("assets/entities/platformsTextures/tile2.png")
 
-    Background = love.graphics.newImage("assets/background/test.png")
+    Background = love.graphics.newImage("assets/background/Tutorial.png")
 
     Platform.clear()
     Enemy.clear()
@@ -50,6 +50,10 @@ function Tutorial.load()
     MapEnemies = {}
     
     -- GROUND
+    Platform.new(-400, 550, 400, 32, nil, Tile1) -- INV WALL
+    Platform.new(-400, 580, 400, 300, nil, Tile2) -- INV WALL
+    Platform.new(-15, 200, 25, 600, {0,0,0}, nil, nil, true, 0, false) -- INVISIBLE WALL COLLISION
+
     Platform.new(0, 550, 800, 32, nil, Tile1)
     Platform.new(0, 580, 800, 300, nil, Tile2)
 
@@ -155,7 +159,7 @@ function Tutorial.draw()
         BASE_WIDTH - (BASE_WIDTH / 1.02),
         BASE_HEIGHT - (BASE_HEIGHT / 12),
         "assets/fonts/PressStart2P-Regular.ttf",
-        12,
+        10,
         "Press ESC to SKIP TUTORIAL",
         {1,1,1},
         2,

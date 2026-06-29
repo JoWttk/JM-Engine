@@ -18,12 +18,13 @@ Texts.Settings = {
     [2] = "Language: ",
     [3] = "Controller: ",
     [4] = "Volume: ",
-    [5] = "Difficulty: ",
+    [5] = "VSync: ",
     [6] = "Back",
 
     ControlTypes = {
         [1] = "Keyboard",
-        [2] = "Gamepad"
+        [2] = "Gamepad",
+        [3] = "(No controller found)"
     }
 }
 

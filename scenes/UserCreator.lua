@@ -64,7 +64,8 @@ function UC.load()
             })
 
             Scene.change("Tutorial")
-        end
+        end,
+        "scale"
     )
 
     if CurrentLanguageModule and CurrentLanguageModule.UserCreator then

@@ -15,6 +15,8 @@ task = require("engine.Utils.task")
 WEB_PLATFORM = "CrazyGames"
 Web = require("engine.Web."..WEB_PLATFORM)
 
+NonPausableScenes = {"Menu","Tutorial", "UserCreator"}
+
 -- key - especial - pixel size: 32x16
 -- key - default - pixel size: 16x16
 

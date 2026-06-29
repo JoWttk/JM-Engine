@@ -7,6 +7,7 @@ local Enemy = require("entities.Enemy")
 local Save = require("engine.Save")
 
 local Camera
+local Background
 
 Parkour.recentlyJoined = false
 
@@ -23,6 +24,8 @@ function Parkour.load()
         local recentlyJoined = data.recentlyJoined
         Parkour.recentlyJoined = recentlyJoined
     end
+
+    Background = love.graphics.newImage("assets/background/Parkour.png")
 
     Platform.clear()
     Enemy.clear()
@@ -83,6 +86,8 @@ function Parkour.update(dt)
 end
 
 function Parkour.draw()
+    love.graphics.draw(Background, -300, -400)
+
     if Camera then
         Camera.set()
     end

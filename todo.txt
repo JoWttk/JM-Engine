@@ -1,8 +1,11 @@
 - Fix enemies;
+- Finish Parkour level;
 - Make enemies sprite;
 - Change player sprite;
 - Make new levels;
 - Make & fix respawn
-- Fix player sprite animation bugging at some animations
-    ps: showing (up) animations
-- ...
+- Fix player sprite animation bugging at some animations;
+    (ps: showing (up) animations)
+- Mobile (maybe);
+- Fix pause;
+- Use Colors Module (optional).

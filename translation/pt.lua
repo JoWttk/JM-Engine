@@ -16,14 +16,15 @@ Texts.Dead = {
 Texts.Settings = {
     [1] = "Configurações",
     [2] = "Idioma: ",
-    [3] = "Controles: ",
+    [3] = "Controle: ",
     [4] = "Volume: ",
-    [5] = "Dificuldade: ",
+    [5] = "VSync: ",
     [6] = "Voltar",
 
     ControlTypes = {
         [1] = "Teclado",
-        [2] = "Controle"
+        [2] = "Controle",
+        [3] = "(Controle não encontado)"
     }
 }
 

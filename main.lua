@@ -4,6 +4,7 @@ local Scene = require("engine.Scene")
 local Input = require("engine.Input")
 local Player = require("entities.Player")
 local UI = require("engine.Interface.UI")
+local Table = require("engine.Utils.Table")
 
 lick = require("libs.lick")
 lick.reset = true 
@@ -72,6 +73,18 @@ function love.keypressed(key)
 
     if Scene.keypressed then
         Scene.keypressed(key)
+    end
+
+    if key == "escape" then
+        if Table.find(NonPausableScenes, CURRENT_SCENE) then
+            return
+        end
+
+        if CURRENT_SCENE == "Settings" then
+            Scene.change(OLD_SCENE)
+        else
+            Scene.change("Settings")
+        end
     end
 end
 

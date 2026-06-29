@@ -1,8 +1,8 @@
 local Settings = {
     Language = "en", -- en, pt
-    Controller = "keyboard", -- keyboard, gamepad
+    Controller = "Keyboard", -- keyboard, gamepad
     Volume = 100, -- 0 to 100
-    Difficulty = "normal" -- easy, normal, hard
+    VSync = "ON" -- on, off
 }
 
 local Scene = require("engine.Scene")
@@ -23,7 +23,7 @@ local ST
 local ChangeLanguageButton
 local ChangeControllerButton
 local ChangeVolumeButton
-local ChangeDifficultyButton
+local VSyncButton
 
 local BackButton
 
@@ -39,7 +39,7 @@ function Settings.load()
         Settings.Language = data.Language or "en"
         Settings.Controller = data.Controller or "keyboard"
         Settings.Volume = data.Volume or 100
-        Settings.Difficulty = data.Difficulty or "normal"
+        Settings.VSync = data.VSync or "ON"
     end
     local T = Languages[Settings.Language] or Languages["pt"]
     ST = Text:new(BASE_WIDTH/2 - 120, 30, "assets/fonts/PressStart2P-Regular.ttf", 28, T.Settings[1], {1,1,1}, 2, {0.2, 0.6, 0.8})
@@ -64,35 +64,39 @@ function Settings.load()
             ChangeLanguageButton:setText(newT.Settings[2] .. Settings.Language:upper())
             ChangeControllerButton:setText(newT.Settings[3] .. Settings.Controller)
             ChangeVolumeButton:setText(newT.Settings[4] .. Settings.Volume)
-            ChangeDifficultyButton:setText(newT.Settings[5] .. Settings.Difficulty)
+            VSyncButton:setText(newT.Settings[5] .. Settings.VSync)
             BackButton:setText(newT.Settings[6])
 
             ST:setText(newT.Settings[1])
-        end
+        end,
+        "scale"
     )
 
     ChangeControllerButton = Button:new(
-        BASE_WIDTH/2-150, BASE_HEIGHTE_HEIGHTE_HEIGHT/2 - 130, 300, 50,
+        BASE_WIDTH/2-150, BASE_HEIGHT/2 - 130, 300, 50,
         {0.2, 0.6, 0.8}, CurrentLanguageModule.Settings[3] .. Settings.Controller,
         {1,1,1}, "assets/fonts/PressStart2P-Regular.ttf", 14,
         2, {1,1,1},
         function()
             if not love.joystick.getJoysticks()[1] then
-                ChangeControllerButton:setText("(No Gamepad Detected)")
+                ChangeControllerButton:setText(CurrentLanguageModule.Settings.ControlTypes[3])
                 
                 task.delay(1.5, function()
-                    ChangeControllerButton:setText("Controller: "..Settings.Controller)
+                    ChangeControllerButton:setText(CurrentLanguageModule.Settings[3] .. CurrentLanguageModule.Settings.ControlTypes[1])
                 end)
 
                 return
             end
 
-            if Settings.Controller == "keyboard" then
-
+            if Settings.Controller == "Keyboard" then
+                -- use joystick
+                ChangeControllerButton:setText(CurrentLanguageModule.Settings[3] .. CurrentLanguageModule.Settings.ControlTypes[2])
             else
-
+                -- use keyboard
+                ChangeControllerButton:setText(CurrentLanguageModule.Settings[3] .. CurrentLanguageModule.Settings.ControlTypes[1])
             end
-        end
+        end,
+        "scale"
     )
 
     ChangeVolumeButton = Button:new(
@@ -108,25 +112,28 @@ function Settings.load()
             end
             ChangeVolumeButton:setText((Languages[Settings.Language] or Languages["pt"]).Settings[4] .. Settings.Volume)
             Settings.save()
-        end
+        end,
+        "scale"
     )
 
-    ChangeDifficultyButton = Button:new(
+    VSyncButton = Button:new(
         BASE_WIDTH/2-150, BASE_HEIGHT/2 - (130 - 140), 300, 50,
-        {0.2, 0.6, 0.8}, "Difficulty: Normal",
+        {0.2, 0.6, 0.8}, CurrentLanguageModule.Settings[5] .. Settings.VSync ,
         {1,1,1}, "assets/fonts/PressStart2P-Regular.ttf", 14,
         2, {1,1,1},
         function()
-            if Settings.Difficulty == "easy" then
-                Settings.Difficulty = "normal"
-            elseif Settings.Difficulty == "normal" then
-                Settings.Difficulty = "hard"
+            if Settings.VSync == "ON" then
+                Settings.VSync = "OFF"
+                love.window.setVSync(false)
             else
-                Settings.Difficulty = "easy"
+                Settings.VSync = "ON"
+                love.window.setVSync(true)
             end
-            ChangeDifficultyButton:setText((Languages[Settings.Language] or Languages["pt"]).Settings[5] .. Settings.Difficulty)
+
+            VSyncButton:setText((Languages[Settings.Language] or Languages["pt"]).Settings[5] .. Settings.VSync)
             Settings.save()
-        end
+        end,
+        "scale"
     )
 
     BackButton = Button:new(
@@ -137,16 +144,17 @@ function Settings.load()
         function()
             Settings.save()
             Scene.change("Menu")
-        end
+        end,
+        "shake"
     )
 
     table.insert(buttons, ChangeLanguageButton)
     table.insert(buttons, ChangeControllerButton)
     table.insert(buttons, ChangeVolumeButton)
-    table.insert(buttons, ChangeDifficultyButton)
+    table.insert(buttons, VSyncButton)
     table.insert(buttons, BackButton)
 
-    for _, b in ipairs({ChangeLanguageButton, ChangeControllerButton, ChangeVolumeButton, ChangeDifficultyButton, BackButton}) do
+    for _, b in ipairs({ChangeLanguageButton, ChangeControllerButton, ChangeVolumeButton, VSyncButton, BackButton}) do
         if b and b.centerHorizontally then b:centerHorizontally(BASE_WIDTH/2) end
     end
     
@@ -159,12 +167,12 @@ function Settings.load()
             ChangeLanguageButton:setText(T.Settings[2] .. (newLang:upper()))
             ChangeControllerButton:setText(T.Settings[3] .. Settings.Controller)
             ChangeVolumeButton:setText(T.Settings[4] .. Settings.Volume)
-            ChangeDifficultyButton:setText(T.Settings[5] .. Settings.Difficulty)
+            VSyncButton:setText(T.Settings[5] .. Settings.VSync)
 
             BackButton:setText(T.Settings[6])
             ST:setText(T.Settings[1])
 
-            for _, b in ipairs({ChangeLanguageButton, ChangeControllerButton, ChangeVolumeButton, ChangeDifficultyButton, BackButton}) do
+            for _, b in ipairs({ChangeLanguageButton, ChangeControllerButton, ChangeVolumeButton, VSyncButton, BackButton}) do
                 if b and b.centerHorizontally then b:centerHorizontally(BASE_WIDTH/2) end
             end
             if ST and ST.centerAt then ST:centerAt(BASE_WIDTH/2) end
@@ -177,7 +185,7 @@ function Settings.save()
         Language = Settings.Language,
         Controller = Settings.Controller,
         Volume = Settings.Volume,
-        Difficulty = Settings.Difficulty
+        VSync = Settings.VSync
     })
 end
 

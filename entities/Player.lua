@@ -705,7 +705,6 @@ function Player.getY()
 end
 
 Player.onCollision:connect(function(platform, eventType)
-
     if eventType == "enter" then
         Player.currentCollision = platform.tag
 
