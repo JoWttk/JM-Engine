@@ -42,7 +42,7 @@ function InterfaceText:new(x, y, font, fontSize, text, textColor, textStroke, te
     function textObj:centerAt(cx)
         local font = UI.getFont(self.fontPath, self.fontSize)
         local w = font:getWidth(self.text or "")
-        self.x = (cx or (1024/2)) - (w / 2)
+        self.x = (cx or (BASE_WIDTH/2)) - (w / 2)
     end
 
     return textObj

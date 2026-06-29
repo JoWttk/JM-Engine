@@ -42,10 +42,10 @@ function Settings.load()
         Settings.Difficulty = data.Difficulty or "normal"
     end
     local T = Languages[Settings.Language] or Languages["pt"]
-    ST = Text:new(1024/2 - 120, 30, "assets/fonts/PressStart2P-Regular.ttf", 28, T.Settings[1], {1,1,1}, 2, {0.2, 0.6, 0.8})
+    ST = Text:new(BASE_WIDTH/2 - 120, 30, "assets/fonts/PressStart2P-Regular.ttf", 28, T.Settings[1], {1,1,1}, 2, {0.2, 0.6, 0.8})
 
     ChangeLanguageButton = Button:new(
-        1024/2-150, 768/2 - 200, 300, 50,
+        BASE_WIDTH/2-150, BASE_HEIGHT/2 - 200, 300, 50,
         {0.2, 0.6, 0.8}, CurrentLanguageModule.Settings[2] .. Settings.Language:upper(),
         {1,1,1}, "assets/fonts/PressStart2P-Regular.ttf", 15,
         2, {1,1,1},
@@ -72,7 +72,7 @@ function Settings.load()
     )
 
     ChangeControllerButton = Button:new(
-        1024/2-150, 768/2 - 130, 300, 50,
+        BASE_WIDTH/2-150, BASE_HEIGHTE_HEIGHTE_HEIGHT/2 - 130, 300, 50,
         {0.2, 0.6, 0.8}, CurrentLanguageModule.Settings[3] .. Settings.Controller,
         {1,1,1}, "assets/fonts/PressStart2P-Regular.ttf", 14,
         2, {1,1,1},
@@ -96,7 +96,7 @@ function Settings.load()
     )
 
     ChangeVolumeButton = Button:new(
-        1024/2-150, 768/2 - (130 - 70), 300, 50,
+        BASE_WIDTH/2-150, BASE_HEIGHT/2 - (130 - 70), 300, 50,
         {0.2, 0.6, 0.8}, CurrentLanguageModule.Settings[4] .. Settings.Volume,
         {1,1,1}, "assets/fonts/PressStart2P-Regular.ttf", 14,
         2, {1,1,1},
@@ -112,7 +112,7 @@ function Settings.load()
     )
 
     ChangeDifficultyButton = Button:new(
-        1024/2-150, 768/2 - (130 - 140), 300, 50,
+        BASE_WIDTH/2-150, BASE_HEIGHT/2 - (130 - 140), 300, 50,
         {0.2, 0.6, 0.8}, "Difficulty: Normal",
         {1,1,1}, "assets/fonts/PressStart2P-Regular.ttf", 14,
         2, {1,1,1},
@@ -130,7 +130,7 @@ function Settings.load()
     )
 
     BackButton = Button:new(
-        1024/2-125, 768/1.2, 250, 50,
+        BASE_WIDTH/2-125, BASE_HEIGHT/1.2, 250, 50,
         {0.2, 0.6, 0.8}, "Back",
         {1,1,1}, "assets/fonts/PressStart2P-Regular.ttf", 24,
         2, {1,1,1},
@@ -147,10 +147,10 @@ function Settings.load()
     table.insert(buttons, BackButton)
 
     for _, b in ipairs({ChangeLanguageButton, ChangeControllerButton, ChangeVolumeButton, ChangeDifficultyButton, BackButton}) do
-        if b and b.centerHorizontally then b:centerHorizontally(1024/2) end
+        if b and b.centerHorizontally then b:centerHorizontally(BASE_WIDTH/2) end
     end
     
-    if ST and ST.centerAt then ST:centerAt(1024/2) end
+    if ST and ST.centerAt then ST:centerAt(BASE_WIDTH/2) end
 
     if ChangeLanguage then
         ChangeLanguage:connect(function(newLang)
@@ -165,9 +165,9 @@ function Settings.load()
             ST:setText(T.Settings[1])
 
             for _, b in ipairs({ChangeLanguageButton, ChangeControllerButton, ChangeVolumeButton, ChangeDifficultyButton, BackButton}) do
-                if b and b.centerHorizontally then b:centerHorizontally(1024/2) end
+                if b and b.centerHorizontally then b:centerHorizontally(BASE_WIDTH/2) end
             end
-            if ST and ST.centerAt then ST:centerAt(1024/2) end
+            if ST and ST.centerAt then ST:centerAt(BASE_WIDTH/2) end
         end)
     end
 end

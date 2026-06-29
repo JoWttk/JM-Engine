@@ -1,7 +1,7 @@
 local UI = {}
 
-UI.baseWidth = 1024
-UI.baseHeight = 768
+UI.baseWidth = BASE_WIDTH
+UI.baseHeight = BASE_HEIGHT
 UI.scale = 1
 UI.fontCache = {}
 

@@ -19,15 +19,24 @@ local collisions = {
             })
 
             Window.show("Press {SPACE} to join parkour!")
-
-            print("loaded")
         end,
 
-        run = function(Player)
-            if Input.wasPressed("space") then
+        run = function(Player, skipped)
+            if not skipped then skipped = false end
+
+            local function leave()
                 Scene.change("Parkour", true, function()
                     Window.close()
                 end)
+            end
+            
+            if skipped then
+                leave()
+                return
+            end
+
+            if Input.wasPressed("space") then
+                leave()
             end
         end,
 
@@ -50,14 +59,10 @@ local collisions = {
                 width = 400
             })
             SimpleD.showSequence(CurrentLanguageModule.Tutorial.StomperExplain)
-
-            print("loaded")
         end,
 
         unload = function(Player)
             SimpleD.close()
-
-            print("Unloaded")
         end,
     }
 }

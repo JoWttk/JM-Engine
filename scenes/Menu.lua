@@ -17,7 +17,7 @@ Menu.recentlyJoined = false
 
 function Menu.load()
     PlayButton = Button:new(
-        1024/2-150, 768/2, 300, 50,
+        BASE_WIDTH/2-150, BASE_HEIGHT/2, 300, 50,
         {0.2, 0.6, 0.8}, CurrentLanguageModule.Menu[1] or "Play",
         {1,1,1}, "assets/fonts/PressStart2P-Regular.ttf", 21,
         2, {1,1,1},
@@ -32,7 +32,7 @@ function Menu.load()
     )
 
     SettingsButton = Button:new(
-        1024/2-150, 768/2 + 70, 300, 50,
+        BASE_WIDTH/2-150, BASE_HEIGHT/2 + 70, 300, 50,
         {0.2, 0.6, 0.8}, CurrentLanguageModule.Menu[2] or "Settings",
         {1,1,1}, "assets/fonts/PressStart2P-Regular.ttf", 18,
         2, {1,1,1},
@@ -41,10 +41,10 @@ function Menu.load()
         end
     )
 
-    GameNameText = Text:new(1024/4.7, 768/4, "assets/fonts/PressStart2P-Regular.ttf", 48, "JM Engine Demo", {0,0,0}, 2.4, {1,1,1})
-    if PlayButton.centerHorizontally then PlayButton:centerHorizontally(1024/2) end
-    if SettingsButton.centerHorizontally then SettingsButton:centerHorizontally(1024/2) end
-    if GameNameText and GameNameText.centerAt then GameNameText:centerAt(1024/2) end
+    GameNameText = Text:new(BASE_WIDTH/4.7, BASE_HEIGHT/4, "assets/fonts/PressStart2P-Regular.ttf", 48, "JM Engine Demo", {0,0,0}, 2.4, {1,1,1})
+    if PlayButton.centerHorizontally then PlayButton:centerHorizontally(BASE_WIDTH/2) end
+    if SettingsButton.centerHorizontally then SettingsButton:centerHorizontally(BASE_WIDTH/2) end
+    if GameNameText and GameNameText.centerAt then GameNameText:centerAt(BASE_WIDTH/2) end
 end
 
 if ChangeLanguage then
@@ -57,21 +57,16 @@ if ChangeLanguage then
             SettingsButton:setText(CurrentLanguageModule.Menu[2])
         end
         
-        if PlayButton and PlayButton.centerHorizontally then PlayButton:centerHorizontally(1024/2) end
-        if SettingsButton and SettingsButton.centerHorizontally then SettingsButton:centerHorizontally(1024/2) end
-        if GameNameText and GameNameText.centerAt then GameNameText:centerAt(1024/2) end
+        if PlayButton and PlayButton.centerHorizontally then PlayButton:centerHorizontally(BASE_WIDTH/2) end
+        if SettingsButton and SettingsButton.centerHorizontally then SettingsButton:centerHorizontally(BASE_WIDTH/2) end
+        if GameNameText and GameNameText.centerAt then GameNameText:centerAt(BASE_WIDTH/2) end
     end)
 end
 
 function Menu.update(dt)
     local mouseX, mouseY = Input.getCanvasMousePosition()
-
     PlayButton:update(mouseX, mouseY, Input.wasMousePressed(1))
     SettingsButton:update(mouseX, mouseY, Input.wasMousePressed(1))
-
-    -- if Input.wasPressed("g") then
-    --     ChangeLanguage("en")
-    -- end
 end
 
 function Menu.draw()

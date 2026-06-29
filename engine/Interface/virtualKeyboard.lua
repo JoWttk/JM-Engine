@@ -45,8 +45,8 @@ end
 function VirtualKeyboard:_recalc()
     local maxCols = 10
     local width = maxCols * self.keyW + (maxCols - 1) * self.gap
-    self.x = 1024 / 2 - width / 2
-    self.y = 768 / 2 - 120
+    self.x = BASE_WIDTH / 2 - width / 2
+    self.y = BASE_HEIGHT / 2 - 120
 
     self.keys = {}
 

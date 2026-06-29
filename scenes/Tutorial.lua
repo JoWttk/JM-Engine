@@ -10,6 +10,9 @@ local simpleD = require("engine.DialogTypes.SimpleDialogue")
 local Window = require("engine.Interface.window")
 
 local Save = require("engine.Save")
+local Text = require("engine.Interface.text")
+
+local Collisions = require("entities.PlayerUtils.Collisions")
 
 local Camera
 local Background
@@ -22,7 +25,7 @@ Tutorial.recentlyJoined = false
 Tutorial.alreadyJoined = false
 
 Tutorial.PlayerX = 100
-Tutorial.PlayerY = 300
+Tutorial.PlayerY = 285
 
 function Tutorial.load()
     love.graphics.setDefaultFilter("nearest","nearest")
@@ -76,7 +79,7 @@ function Tutorial.load()
     Camera = Player.getCamera()
     
     Camera.smoothness = 6
-    Camera.scale = 1.8
+    Camera.scale = CAMERA_SCALE
 
     if not Tutorial.recentlyJoined then
         Player.moveTo(Tutorial.PlayerX, Tutorial.PlayerY)
@@ -131,7 +134,7 @@ end
 
 function Tutorial.draw()
     love.graphics.draw(Background, 0, -200)
-        
+
     if Camera then
         Camera.set()
     end
@@ -148,7 +151,24 @@ function Tutorial.draw()
         Camera.unset()
     end
 
+    Text:new(
+        BASE_WIDTH - (BASE_WIDTH / 1.02),
+        BASE_HEIGHT - (BASE_HEIGHT / 12),
+        "assets/fonts/PressStart2P-Regular.ttf",
+        12,
+        "Press ESC to SKIP TUTORIAL",
+        {1,1,1},
+        2,
+        {0,0,0}
+    ):draw()
+
     simpleD.draw()
+end
+
+function Tutorial.keypressed(key)
+    if key == "escape" then
+        Collisions["JoinParkour"].run(Player, true)
+    end
 end
 
 return Tutorial

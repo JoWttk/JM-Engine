@@ -5,7 +5,7 @@ Camera.y = 0
 Camera.targetX = 0
 Camera.targetY = 0
 Camera.smoothness = 5
-Camera.scale = 1.5 
+Camera.scale = 1.25 
 Camera.rotation = 0
 
 Camera.bounds = {
@@ -32,6 +32,7 @@ end
 
 function Camera.update(dt)
     local lerp = math.min(1, Camera.smoothness * dt)
+    
     Camera.x = Camera.x + (Camera.targetX - Camera.x) * lerp
     Camera.y = Camera.y + (Camera.targetY - Camera.y) * lerp
     
@@ -46,7 +47,7 @@ function Camera.follow(x, y)
     
     if Camera.deadzone.enabled then
         local centerX = Camera.x + w / (2 * Camera.scale)
-        local centerY = Camera.y + h / (2 * Camera.scale)
+        local centerY = Camera.y + h / (1.7 * Camera.scale)
         
         local dx = x - centerX
         local dy = y - centerY
@@ -60,7 +61,7 @@ function Camera.follow(x, y)
         end
     else
         Camera.targetX = x - w / (2 * Camera.scale)
-        Camera.targetY = y - h / (2 * Camera.scale)
+        Camera.targetY = y - h / (1.7 * Camera.scale)
     end
 end
 

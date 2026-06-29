@@ -48,8 +48,6 @@ local lastStamina
 local healthBar
 local lastHealth
 
-local RespawnText
-
 local shiftblock = false
 
 local gravity = 1200
@@ -280,8 +278,6 @@ function Player.load()
         tasksInitialized = true
         print("[Player] tasksInitialized = true")
     end
-
-    RespawnText = Text:new(1024/2.5, 768/2, "assets/fonts/PressStart2P-Regular.ttf", 18, "Press R to respawn", {0.8, 0.2, 0.2}, 2.4, {1,1,1})
 
     -- Opcional: Configurar limites da câmera (ajuste conforme seu mapa)
     -- Camera.setBounds(0, 0, 3200, 2400)
@@ -637,7 +633,7 @@ function Player.respawn(x, y)
     Scene.change(CURRENT_SCENE)
 
     deathZoom = false
-    Camera.scale = 1.8
+    Camera.scale = CAMERA_SCALE
 
     local pos = Components.Position[player]
     local vel = Components.Velocity[player]
@@ -711,18 +707,13 @@ end
 Player.onCollision:connect(function(platform, eventType)
 
     if eventType == "enter" then
-        print("I joined ".. platform.tag)
-
         Player.currentCollision = platform.tag
 
         if Collisions[platform.tag] and Collisions[platform.tag].load then
-            print("loaded collision")
             Collisions[platform.tag].load(Player)
         end
     elseif eventType == "exit" then
-        print("I left " .. platform.tag)
         if Collisions[platform.tag] and Collisions[platform.tag].unload then
-            print("unloaded collision")
             Collisions[platform.tag].unload(Player)
         end
 

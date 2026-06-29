@@ -3,4 +3,6 @@
 - Change player sprite;
 - Make new levels;
 - Make & fix respawn
-- Change resolution: 836x470
+- Fix player sprite animation bugging at some animations
+    ps: showing (up) animations
+- ...

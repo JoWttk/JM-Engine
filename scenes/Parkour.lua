@@ -44,7 +44,7 @@ function Parkour.load()
 
     Camera = Player.getCamera()
     Camera.smoothness = 6
-    Camera.scale = 1.8
+    Camera.scale = CAMERA_SCALE
 
     if not Parkour.recentlyJoined then
         Player.moveTo(100, 100)

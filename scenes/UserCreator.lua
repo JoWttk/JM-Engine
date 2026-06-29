@@ -4,7 +4,6 @@ require("GLOBALS")
 
 local task = require("engine.Utils.task")
 local Save = require("engine.Save")
-
 local Scene = require("engine.Scene")
 local Button = require("engine.Interface.button")
 local Text = require("engine.Interface.text")
@@ -15,7 +14,6 @@ local VirtualKeyboard = require("engine.Interface.virtualKeyboard")
 local Buttons = {}
 local PlayButton
 local vk
-
 local MinText
 local CYT
 
@@ -27,31 +25,26 @@ function UC.load()
 
     require("translation.change")
 
-    vk = VirtualKeyboard.new({
-        maxLen = 12,
-    })
+    vk = VirtualKeyboard.new({ maxLen = 12 })
     vk:open("")
 
     CYT = Text:new(
-        1024/3.5, 768/9, "assets/fonts/PressStart2P-Regular.ttf", 23,
+        BASE_WIDTH/3.5, BASE_HEIGHT/9, "assets/fonts/PressStart2P-Regular.ttf", 23,
         (CurrentLanguageModule and CurrentLanguageModule.UserCreator and CurrentLanguageModule.UserCreator.title) or "Create Your Character",
         {1,1,1}, 0, {0.2, 0.6, 0.8}
     )
 
     PlayButton = Button:new(
-        1024/2-130, 768/1.3, 260, 50,
+        BASE_WIDTH/2-130, BASE_HEIGHT/1.3, 260, 50,
         {0.2, 0.6, 0.8}, "Create User",
         {1,1,1}, "assets/fonts/PressStart2P-Regular.ttf", 18,
         2, {1,1,1},
         function()
             if #vk.text < 1 then
                 vk.text = MinText
-                task.delay(1.25,function()
-                    if vk.text == MinText then
-                        vk.text = ""
-                    end
+                task.delay(1.25, function()
+                    if vk.text == MinText then vk.text = "" end
                 end)
-
                 return
             elseif vk.text == MinText then
                 return
@@ -64,13 +57,9 @@ function UC.load()
             Save.write("player.txt", {
                 name = vk.text,
                 level = 1,
-                Attack = 1,
-                Defense = 1,
-                Power = 1,
-                Stamina = 1,
-                posX=100,
-                posY=100,
-                scene="Tutorial",
+                Attack = 1, Defense = 1, Power = 1, Stamina = 1,
+                posX = 100, posY = 100,
+                scene = "Tutorial",
                 recentlyJoined = require("scenes."..CURRENT_SCENE).recentlyJoined
             })
 
@@ -80,8 +69,8 @@ function UC.load()
 
     if CurrentLanguageModule and CurrentLanguageModule.UserCreator then
         PlayButton:setText(CurrentLanguageModule.UserCreator.create)
-        if PlayButton.centerHorizontally then PlayButton:centerHorizontally(1024/2) end
-        if CYT and CYT.centerAt then CYT:centerAt(1024/2) end
+        if PlayButton.centerHorizontally then PlayButton:centerHorizontally(BASE_WIDTH/2) end
+        if CYT and CYT.centerAt then CYT:centerAt(BASE_WIDTH/2) end
     end
 
     if ChangeLanguage then
@@ -90,11 +79,11 @@ function UC.load()
             MinText = (mod.UserCreator and mod.UserCreator.minchar) or MinText
             if CYT and CYT.setText and mod.UserCreator and mod.UserCreator.title then
                 CYT:setText(mod.UserCreator.title)
-                if CYT.centerAt then CYT:centerAt(1024/2) end
+                if CYT.centerAt then CYT:centerAt(BASE_WIDTH/2) end
             end
             if PlayButton and PlayButton.setText and mod.UserCreator and mod.UserCreator.create then
                 PlayButton:setText(mod.UserCreator.create)
-                if PlayButton.centerHorizontally then PlayButton:centerHorizontally(1024/2) end
+                if PlayButton.centerHorizontally then PlayButton:centerHorizontally(BASE_WIDTH/2) end
             end
         end)
     end
@@ -108,16 +97,11 @@ function UC.update(dt)
     local mouseX, mouseY = Input.getCanvasMousePosition()
 
     for _, button in ipairs(Buttons) do
-        if button.update then
-            button:update(mouseX, mouseY, Input.wasMousePressed(1))
-        end
+        if button.update then button:update(mouseX, mouseY, Input.wasMousePressed(1)) end
     end
 
     vk:mousemoved(mouseX, mouseY)
-    if Input.wasMousePressed(1) then
-        vk:mousepressed(mouseX, mouseY, 1)
-    end
-
+    if Input.wasMousePressed(1) then vk:mousepressed(mouseX, mouseY, 1) end
     vk:update(dt)
     Player.setName(vk.text)
 end
@@ -126,22 +110,17 @@ function UC.draw()
     for _, button in ipairs(Buttons) do
         button:draw()
     end
-
     vk:draw()
 end
 
 function UC.keypressed(key)
     if vk and vk:isOpen() then
-        if vk:keypressed(key) then
-            return
-        end
+        if vk:keypressed(key) then return end
     end
 end
 
 function UC.keyreleased(key)
-    if vk and vk:isOpen() then
-        vk:keyreleased(key)
-    end
+    if vk and vk:isOpen() then vk:keyreleased(key) end
 end
 
 return UC

@@ -17,7 +17,7 @@ end
 CurrentLanguageModule = require("translation." ..CurrentLanguage)
 
 local gameCanvas
-local baseWidth, baseHeight = 1024, 768
+local baseWidth, baseHeight = 1031, 580 
 
 function love.load()
     love.graphics.setDefaultFilter("nearest","nearest")

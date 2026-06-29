@@ -3,6 +3,11 @@ OLD_SCENE = "Menu"
 CURRENT_SCENE="Menu"
 CURRENT_SCENE_MODULE = nil
 
+BASE_WIDTH = 1031
+BASE_HEIGHT = 580
+
+CAMERA_SCALE = 1.25
+
 CurrentLanguage = "pt"
 CurrentLanguageModule = nil
 

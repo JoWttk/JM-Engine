@@ -76,7 +76,7 @@ function InterfaceButton:new(x, y, width, height, bgColor, text, textColor, font
     end
 
     function button:centerHorizontally(cx)
-        cx = cx or (1024/2)
+        cx = cx or (BASE_WIDTH/2)
         self.x = cx - (self.width / 2)
     end
 
