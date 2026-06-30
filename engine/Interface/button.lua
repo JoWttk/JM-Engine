@@ -141,6 +141,13 @@ function InterfaceButton:new(x, y, width, height, bgColor, text, textColor, font
         self.x = cx - (self.width / 2)
     end
 
+    function button:updateFont(newSize)
+        self.fontSize = newSize
+        
+        local f = UI.getFont(self.fontPath, self.fontSize)
+        love.graphics.setFont(f)
+    end
+
     return button
 end
 

@@ -5,6 +5,9 @@ local Input = require("engine.Input")
 local Player = require("entities.Player")
 local UI = require("engine.Interface.UI")
 local Table = require("engine.Utils.Table")
+local Camera = require("engine.EntitySystem.Camera")
+local Settings = require("scenes.Settings")
+local Progress = require("engine.Progress")
 
 lick = require("libs.lick")
 lick.reset = true 
@@ -30,14 +33,16 @@ function love.load()
     Scene.register("UserCreator", require("scenes.UserCreator"))
     Scene.register("Tutorial", require("scenes.Tutorial"))
     Scene.register("Parkour", require("scenes.Parkour"))
-    Scene.register("Dead", require("scenes.Dead"))
+    Scene.register("MapSelector", require("scenes.MapSelector"))
+    Scene.register("World1_Level1", require("scenes.World1_Level1"))
     
     Scene.change("Menu")
+    Progress.load()
     Web.init()
 end
 
 function love.update(dt)
-    love.window.setTitle("Testing | " .. love.timer.getFPS() .. " FPS")
+    -- love.window.setTitle("Testing | " .. love.timer.getFPS() .. " FPS")
     if dt > 0.05 then dt = 0.05 end
     
     Scene.update(dt)
@@ -84,6 +89,7 @@ function love.keypressed(key)
             Scene.change(OLD_SCENE)
         else
             Scene.change("Settings")
+            -- Settings.addQuit:fire()
         end
     end
 end
@@ -114,4 +120,5 @@ end
 
 function love.resize(w, h)
     if UI and UI.init then UI.init() end
+    Camera.onResize()
 end

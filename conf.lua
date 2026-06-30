@@ -1,5 +1,5 @@
 function love.conf(t)
-    t.window.title = "Testing"
+    t.window.title = "Untitled"
     t.externalstorage = false
     t.window.width = 1031
     t.window.height = 580

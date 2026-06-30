@@ -16,13 +16,16 @@ local Collisions = require("entities.PlayerUtils.Collisions")
 
 local Camera
 local Background
+
 local Tile1
 local Tile2
+local Brick
 
 local MapEnemies = {}
 
 Tutorial.recentlyJoined = false
 Tutorial.alreadyJoined = false
+Tutorial.haveSeenWhatsStomper = false
 
 Tutorial.PlayerX = 100
 Tutorial.PlayerY = 285
@@ -40,6 +43,7 @@ function Tutorial.load()
 
     Tile1 = love.graphics.newImage("assets/entities/platformsTextures/tile1.png")
     Tile2 = love.graphics.newImage("assets/entities/platformsTextures/tile2.png")
+    Brick = love.graphics.newImage("assets/entities/platformsTextures/brick.png")
 
     Background = love.graphics.newImage("assets/background/Tutorial.png")
 
@@ -67,7 +71,7 @@ function Tutorial.load()
     Platform.new(1000, 200, 30, 500, nil, nil, "StomperExplain", false, 0, false)
 
     -- SPAWN 
-    Platform.new(100, 400, 100, 20, {0.8, 0.4, 0.2})
+    Platform.new(100, 400, 100, 24, {0, 0, 0}, Brick)
 
     -- FLAG
     Platform.new(1860, 400, 64, 128, {0.8, 0.4, 0.2}, nil, "JoinParkour", false, 0, false) -- FLAG COLLISION
@@ -81,8 +85,7 @@ function Tutorial.load()
     Player.setMap("Tutorial")
     
     Camera = Player.getCamera()
-    
-    Camera.smoothness = 6
+    Camera.smoothness = 5
     Camera.scale = CAMERA_SCALE
 
     if not Tutorial.recentlyJoined then

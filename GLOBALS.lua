@@ -12,13 +12,16 @@ CurrentLanguage = "pt"
 CurrentLanguageModule = nil
 
 task = require("engine.Utils.task")
-WEB_PLATFORM = "CrazyGames"
+WEB_PLATFORM = "Poki"
 Web = require("engine.Web."..WEB_PLATFORM)
 
 NonPausableScenes = {"Menu","Tutorial", "UserCreator"}
+GameplayScenes = {"Parkour"}
 
 -- key - especial - pixel size: 32x16
 -- key - default - pixel size: 16x16
+
+padlock = love.graphics.newImage("assets/images/pixellock.png")
 
 key_icons = love.graphics.newImage("assets/images/key-icons.png")
 key_icons_extra = love.graphics.newImage("assets/images/key-icons-extra.png")

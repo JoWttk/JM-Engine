@@ -676,7 +676,7 @@ function Player.quit()
         posX=Components.Position[player].x,
         posY=Components.Position[player].y,
         scene=Player.currentMap,
-        recentlyJoined = require("scenes."..CURRENT_SCENE).recentlyJoined
+        -- recentlyJoined = require("scenes."..CURRENT_SCENE).recentlyJoined
     })
 
     Save.delete("player.txt")

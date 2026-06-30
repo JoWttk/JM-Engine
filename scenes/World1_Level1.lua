@@ -1,4 +1,7 @@
-local Parkour = {}
+local Level = {}
+
+Level.World = 1
+Level.Level = 1
 
 local Player = require("entities.Player")
 local Platform = require("entities.Platform")
@@ -9,23 +12,23 @@ local Save = require("engine.Save")
 local Camera
 local Background
 
-Parkour.recentlyJoined = false
+Level.recentlyJoined = false
 
-Parkour.PlayerX = 100
-Parkour.PlayerY = 100
+Level.PlayerX = 100
+Level.PlayerY = 100
 
 local MapEnemies = {}
 
-function Parkour.load()
+function Level.load()
     love.graphics.setDefaultFilter("nearest","nearest")
 
     if Save.read("player.txt") then
         local data = Save.read("player.txt")
         local recentlyJoined = data.recentlyJoined
-        Parkour.recentlyJoined = recentlyJoined
+        Level.recentlyJoined = recentlyJoined
     end
 
-    Background = love.graphics.newImage("assets/background/Parkour.png")
+    Background = love.graphics.newImage("assets/background/World1.png")
 
     Platform.clear()
     Enemy.clear()
@@ -40,6 +43,8 @@ function Parkour.load()
     
     Platform.new(650, 300, 30, 250, {0.5, 0.5, 0.8})
 
+    Platform.new(1860, 400, 64, 128, {0.8, 0.4, 0.2}, nil, "ExitW1L1", false, 0, false)
+
     MapEnemies[#MapEnemies + 1] = Enemy:new("stomper", 400, 500, { patrolDist = 200, speed = 120 })
     
     Player.load()
@@ -49,14 +54,14 @@ function Parkour.load()
     Camera.smoothness = 5
     Camera.scale = CAMERA_SCALE
 
-    if not Parkour.recentlyJoined then
+    if not Level.recentlyJoined then
         Player.moveTo(100, 100)
     end
     
-    Parkour.recentlyJoined = true
+    Level.recentlyJoined = true
 end
 
-function Parkour.update(dt)
+function Level.update(dt)
     local Components = require("engine.EntitySystem.Components")
     local entity = Player.getEntity()
     local pos = Components.Position[entity]
@@ -85,7 +90,7 @@ function Parkour.update(dt)
     Enemy.updateAll(dt, playerProxy)
 end
 
-function Parkour.draw()
+function Level.draw()
     love.graphics.draw(Background, -300, -400)
 
     if Camera then
@@ -101,4 +106,4 @@ function Parkour.draw()
     end
 end
 
-return Parkour
+return Level

@@ -7,43 +7,23 @@ local Button = require("engine.Interface.button")
 local Save = require("engine.Save")
 local Text = require("engine.Interface.text")
 
+local BG
+
 require("translation.change")
 
 local GameNameText
 local PlayButton
 local SettingsButton
-local Background
 
-local stars = {}
-local NUM_STARS = 60
 local menuAlpha = 0
-local titleGlow = 0
-local titleGlowDir = 1
 
 Menu.recentlyJoined = false
 
-local function initStars()
-    stars = {}
-    for i = 1, NUM_STARS do
-        stars[i] = {
-            x = math.random(0, BASE_WIDTH),
-            y = math.random(0, BASE_HEIGHT),
-            size = math.random() * 1.8 + 0.4,
-            alpha = math.random() * 0.6 + 0.2,
-            speed = math.random() * 12 + 4,
-            twinkleOffset = math.random() * math.pi * 2,
-        }
-    end
-end
-
 function Menu.load()
-    Background = love.graphics.newImage("assets/background/Menu.png")
+    BG = require("scenes.utils.Background")
+    BG.load()
 
-    math.randomseed(os.time())
-    initStars()
     menuAlpha = 0
-    titleGlow = 0
-    titleGlowDir = 1
 
     PlayButton = Button:new(
         BASE_WIDTH/2 - 160, BASE_HEIGHT/2 + 20, 320, 56,
@@ -75,7 +55,7 @@ function Menu.load()
     GameNameText = Text:new(
         BASE_WIDTH/2, BASE_HEIGHT/4 - 10,
         "assets/fonts/PressStart2P-Regular.ttf", 44,
-        "JM Engine Demo",
+        "Untitled Game",
         {0.85, 0.97, 1.0},
         3.0, {0.1, 0.35, 0.6}
     )
@@ -103,17 +83,7 @@ function Menu.update(dt)
 
     menuAlpha = math.min(1, menuAlpha + dt * 1.5)
 
-    titleGlow = titleGlow + dt * titleGlowDir * 1.2
-    if titleGlow >= 1 then titleGlowDir = -1
-    elseif titleGlow <= 0 then titleGlowDir = 1 end
-
-    for _, s in ipairs(stars) do
-        s.y = s.y + s.speed * dt
-        if s.y > BASE_HEIGHT + 4 then
-            s.y = -4
-            s.x = math.random(0, BASE_WIDTH)
-        end
-    end
+    BG.update(dt)
 end
 
 local function drawDivider(cx, y, halfW)
@@ -128,23 +98,13 @@ local function drawDivider(cx, y, halfW)
 end
 
 function Menu.draw()
-    love.graphics.setColor(1, 1, 1, 1)
-    love.graphics.draw(Background, -300, -280, 0, 0.7, 0.7)
-
-    love.graphics.setColor(0.02, 0.05, 0.15, 0.45)
-    love.graphics.rectangle("fill", 0, 0, BASE_WIDTH, BASE_HEIGHT)
+    BG.draw()
 
     local t = love.timer.getTime()
 
-    for _, s in ipairs(stars) do
-        local twinkle = 0.5 + 0.5 * math.sin(t * 2.5 + s.twinkleOffset)
-        love.graphics.setColor(0.85, 0.93, 1.0, s.alpha * twinkle * menuAlpha)
-        love.graphics.circle("fill", s.x, s.y, s.size)
-    end
-
     local titleFont = love.graphics.newFont("assets/fonts/PressStart2P-Regular.ttf", 44)
     love.graphics.setFont(titleFont)
-    local title = "JM Engine Demo"
+    local title = "Untitled Game"
     local tw = titleFont:getWidth(title)
     local tx = BASE_WIDTH/2 - tw/2
     local titleY = BASE_HEIGHT/4 - 10
@@ -163,8 +123,8 @@ function Menu.draw()
         love.graphics.print(title, tx + dx, titleY + dy)
     end
 
-    local glowR = 0.85 + titleGlow * 0.15
-    local glowG = 0.95 + titleGlow * 0.05
+    local glowR = 0.85 + BG.titleGlow * 0.15
+    local glowG = 0.95 + BG.titleGlow * 0.05
     love.graphics.setColor(glowR, glowG, 1.0, menuAlpha)
     love.graphics.print(title, tx, titleY)
 
