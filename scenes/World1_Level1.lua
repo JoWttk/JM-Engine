@@ -6,10 +6,12 @@ Level.Level = 1
 local Player = require("entities.Player")
 local Platform = require("entities.Platform")
 local Enemy = require("entities.Enemy")
+local PowerUps = require("entities.PowerUps")
 
 local Save = require("engine.Save")
 
 local Camera
+local Textures
 local Background
 
 Level.recentlyJoined = false
@@ -28,18 +30,24 @@ function Level.load()
         Level.recentlyJoined = recentlyJoined
     end
 
+    Textures = {
+
+    }
+    
     Background = love.graphics.newImage("assets/background/World1.png")
 
     Platform.clear()
     Enemy.clear()
     MapEnemies = {}
     
-    Platform.new(0, 550, 800, 32, nil, love.graphics.newImage("assets/entities/platformsTextures/tile1.png"))
+    Platform.new(0, 550, 800, 32, nil, love.graphics.newImage("assets/entities/textures/tile1.png"))
     
     Platform.new(150, 450, 100, 20, {0.8, 0.4, 0.2})
     Platform.new(350, 350, 120, 20, {0.8, 0.4, 0.2})
     Platform.new(50, 250, 80, 20, {0.8, 0.4, 0.2})
-    Platform.new(500, 400, 140, 20, {0.8, 0.4, 0.2})
+    Platform.new(500, 400, 140, 20, {0.8, 0.4, 0.2}, nil, nil, true, 1, true, true, "bottom", function(p)
+        PowerUps.spawnRandom((p.x + p.w / 2) + 28, p.y)
+    end)
     
     Platform.new(650, 300, 30, 250, {0.5, 0.5, 0.8})
 
@@ -73,12 +81,16 @@ function Level.update(dt)
     Player.update(dt)
 
     local playerProxy = {
-        x      = pos.x,
-        y      = pos.y,
-        width  = col.w,
+        x = pos.x,
+        y = pos.y,
+        width = col.w,
         height = col.h,
-        vy     = vel.y,
-        lastY  = prevY,  
+        vy = vel.y,
+        lastY = prevY,
+        baseSpeed = Player.baseSpeed,
+        speed = Player.speed,
+        jumpBoost = Player.jumpBoost or 1,
+        invincible = Player.invincible or false,
         takeDamage = function(_, amount)
             Player.takeDamage(amount)
         end,
@@ -88,6 +100,11 @@ function Level.update(dt)
     }
 
     Enemy.updateAll(dt, playerProxy)
+    PowerUps.update(dt, playerProxy)
+
+    Player.speed = playerProxy.speed
+    Player.jumpBoost = playerProxy.jumpBoost
+    Player.invincible = playerProxy.invincible
 end
 
 function Level.draw()
@@ -99,6 +116,7 @@ function Level.draw()
     
     Platform.draw()
     Enemy.drawAll()
+    PowerUps.draw()
     Player.draw()
     
     if Camera then

@@ -28,12 +28,14 @@ function love.load()
     UI.init(baseWidth, baseHeight)
     gameCanvas = love.graphics.newCanvas(baseWidth, baseHeight)
     
+    -- MENU
     Scene.register("Menu", require("scenes.Menu"))
     Scene.register("Settings", require("scenes.Settings"))
     Scene.register("UserCreator", require("scenes.UserCreator"))
-    Scene.register("Tutorial", require("scenes.Tutorial"))
-    Scene.register("Parkour", require("scenes.Parkour"))
     Scene.register("MapSelector", require("scenes.MapSelector"))
+    
+    -- GAME
+    Scene.register("Tutorial", require("scenes.Tutorial"))
     Scene.register("World1_Level1", require("scenes.World1_Level1"))
     
     Scene.change("Menu")

@@ -31,6 +31,9 @@ Player.maxStamina = 30
 Player.maxHealth = 100
 Player.health = 100
 
+Player.jumpBoost = 1
+Player.invincible = false
+
 Player.currentCollision = nil
 
 local diedFont = nil
@@ -66,6 +69,7 @@ local Input = require("engine.Input")
 local Platform = require("entities.Platform")
 local SimpleD = require("engine.DialogTypes.SimpleDialogue")
 local Camera = require("engine.EntitySystem.Camera") 
+local PowerUps = require("entities.PowerUps")
 
 local Collisions = require("entities.PlayerUtils.Collisions")
 
@@ -133,6 +137,7 @@ function Player.load()
     end
 
     Player._touching = {}
+    Player._toDestroy = {}
 
     if player then
         local pos = Components.Position[player]
@@ -291,7 +296,7 @@ function Player.update(dt)
     if not player then return end
 
     task.step(dt)
-
+    
     MapModule = Scene.getCurrentModule()
 
     if staminaBar then
@@ -315,9 +320,15 @@ function Player.update(dt)
     local col = Components.Collider[player]
     local sprite = Components.Sprite[player]
     local anim = Components.Animation[player]
+    
+    Player.x = pos.x
+    Player.y = pos.y
+    Player.width = col.w
+    Player.height = col.h
+    PowerUps.update(dt, Player)
 
     local move = 0
-
+    
     if dashing then
         setAnimation(anim, "dash")
         dashTimer = dashTimer - dt
@@ -325,7 +336,7 @@ function Player.update(dt)
             dashing = false
         end
     end
-
+    
     if Input.wasPressed("r") and Player.died == true then
         if CURRENT_SCENE_MODULE then
             Player.respawn(CURRENT_SCENE_MODULE.PlayerX, CURRENT_SCENE_MODULE.PlayerY)
@@ -349,7 +360,7 @@ function Player.update(dt)
 
     if stamina <= 1 then shiftblock = true; sprinting = false end
 
-    local speed = Player.baseSpeed
+    local speed = Player.speed
     if sprinting then
         if anim.animations[anim.current] == "run" then
             anim.animations[anim.current].speed = anim.animations[anim.current].runSpeed
@@ -425,9 +436,19 @@ function Player.update(dt)
                     vel.y = 0
                     onGround = true
                     groundPlatform = platform
+
+                    if platform.breakable and (platform.breakSide == "top" or platform.breakSide == "both") then
+                        Player._toDestroy = Player._toDestroy or {}
+                        table.insert(Player._toDestroy, platform)
+                    end
                 elseif vel.y < 0 then
                     pos.y = platform.y + platform.h
                     vel.y = 0
+
+                    if platform.breakable and (platform.breakSide == "bottom" or platform.breakSide == "both") then
+                        Player._toDestroy = Player._toDestroy or {}
+                        table.insert(Player._toDestroy, platform)
+                    end
                 end
             end
         end
@@ -440,6 +461,13 @@ function Player.update(dt)
     end
 
     Player._touching = touchingNow
+
+    if Player._toDestroy then
+        for _, p in ipairs(Player._toDestroy) do
+            Platform.destroy(p)
+        end
+        Player._toDestroy = nil
+    end
 
     if Collisions[Player.currentCollision] and Collisions[Player.currentCollision].run then
         Collisions[Player.currentCollision].run(Player)
@@ -461,7 +489,7 @@ function Player.update(dt)
             end
         end
 
-        vel.y = jumpVel
+        vel.y = jumpVel * Player.jumpBoost
         onGround = false
         stamina = stamina - 4
         Camera.startShake(0.1, 1)
@@ -586,6 +614,7 @@ function Player.destroy()
 end
 
 function Player.takeDamage(amount)
+    if Player.invincible then return end
     Player.health = math.max(0, Player.health - amount)
     if Player.health <= 0 then
         Player.die()

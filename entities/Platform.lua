@@ -2,7 +2,7 @@ local Platform = {}
 
 Platform.list = {}
 
-function Platform.new(x, y, w, h, color, texture, tag, canCollide, alpha, visible)
+function Platform.new(x, y, w, h, color, texture, tag, canCollide, alpha, visible, breakable, breakSide, onBreak)
     local platform = {
         x = x,
         y = y,
@@ -13,13 +13,17 @@ function Platform.new(x, y, w, h, color, texture, tag, canCollide, alpha, visibl
         tag = tag or "platform",
         canCollide = (canCollide == nil) and true or canCollide,
         alpha = (alpha == nil) and 1 or alpha,
-        visible = (visible == nil) and true or visible
+        visible = (visible == nil) and true or visible,
+        breakable = (breakable == nil) and false or breakable,
+        breakSide = breakSide or "bottom",
+        onBreak = onBreak,
     }
 
     --[[
     CanCollide = false/true,
     alpha 0 = invisible, 1 = fully visible,
-    visible = true/false
+    visible = true/false,
+    breakSide = "bottom" | "top" \ "both"
     ]]
 
     table.insert(Platform.list, platform)
@@ -54,6 +58,25 @@ function Platform.draw()
             end
 
             love.graphics.setColor(1, 1, 1, 1)
+        end
+    end
+end
+
+function Platform.destroy(target)
+    if type(target) == "number" then
+        local platform = Platform.list[target]
+        if platform then
+            if platform.onBreak then platform.onBreak(platform) end
+            table.remove(Platform.list, target)
+        end
+        return
+    end
+
+    for i, platform in ipairs(Platform.list) do
+        if platform == target then
+            if platform.onBreak then platform.onBreak(platform) end
+            table.remove(Platform.list, i)
+            return
         end
     end
 end

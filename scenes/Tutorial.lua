@@ -41,9 +41,9 @@ function Tutorial.load()
         Tutorial.recentlyJoined = recentlyJoined
     end
 
-    Tile1 = love.graphics.newImage("assets/entities/platformsTextures/tile1.png")
-    Tile2 = love.graphics.newImage("assets/entities/platformsTextures/tile2.png")
-    Brick = love.graphics.newImage("assets/entities/platformsTextures/brick.png")
+    Tile1 = love.graphics.newImage("assets/entities/textures/tile1.png")
+    Tile2 = love.graphics.newImage("assets/entities/textures/tile2.png")
+    Brick = love.graphics.newImage("assets/entities/textures/brick.png")
 
     Background = love.graphics.newImage("assets/background/Tutorial.png")
 

@@ -31,7 +31,7 @@ function Parkour.load()
     Enemy.clear()
     MapEnemies = {}
     
-    Platform.new(0, 550, 800, 32, nil, love.graphics.newImage("assets/entities/platformsTextures/tile1.png"))
+    Platform.new(0, 550, 800, 32, nil, love.graphics.newImage("assets/entities/textures/tile1.png"))
     
     Platform.new(150, 450, 100, 20, {0.8, 0.4, 0.2})
     Platform.new(350, 350, 120, 20, {0.8, 0.4, 0.2})

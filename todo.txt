@@ -1,5 +1,5 @@
 - Fix enemies;
-- Finish Parkour level;
+- Finish level;
 - Make enemies sprite;
 - Change player sprite;
 - Make new levels;

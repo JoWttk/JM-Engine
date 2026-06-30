@@ -16,7 +16,6 @@ WEB_PLATFORM = "Poki"
 Web = require("engine.Web."..WEB_PLATFORM)
 
 NonPausableScenes = {"Menu","Tutorial", "UserCreator"}
-GameplayScenes = {"Parkour"}
 
 -- key - especial - pixel size: 32x16
 -- key - default - pixel size: 16x16
