@@ -38,6 +38,7 @@ Player.currentCollision = nil
 
 local diedFont = nil
 local diedSubFont = nil
+local hudPowerupFont = nil
 local deathZoom = false
 local deathZoomTarget = 2.4
 local deathZoomSpeed = 1.25
@@ -160,6 +161,13 @@ function Player.load()
     diedSubFont = love.graphics.newFont("assets/fonts/PressStart2P-Regular.ttf", 12)
 
     local image = love.graphics.newImage("assets/entities/plr.png")
+    image:setFilter("nearest", "nearest")
+    image:setWrap("clamp", "clamp")
+
+    local imageWidth, imageHeight = image:getWidth(), image:getHeight()
+    local function makeQuad(x, y, w, h)
+        return love.graphics.newQuad(x, y, w, h, imageWidth, imageHeight)
+    end
 
     Components.Sprite[player] = {
         image = image,
@@ -171,18 +179,18 @@ function Player.load()
         animations = {
             idle = {
                 frames = {
-                    love.graphics.newQuad(0, 0, 32, 32, image),
-                    love.graphics.newQuad(32, 0, 32, 32, image),
+                    makeQuad(0, 0, 32, 32),
+                    makeQuad(32, 0, 32, 32),
                 },
                 speed = 0.4
             },
 
             run = {
                 frames = {
-                    love.graphics.newQuad(0, 32, 32, 32, image),
-                    love.graphics.newQuad(32, 32, 32, 32, image),
-                    love.graphics.newQuad(64, 32, 32, 32, image),
-                    love.graphics.newQuad(96, 32, 32, 32, image),
+                    makeQuad(0, 32, 32, 32),
+                    makeQuad(32, 32, 32, 32),
+                    makeQuad(64, 32, 32, 32),
+                    makeQuad(96, 32, 32, 32),
                 },
                 speed = 0.1,
                 runSpeed = 0.07
@@ -190,31 +198,31 @@ function Player.load()
 
             fall = {
                 frames = {
-                    love.graphics.newQuad(32, 96, 32, 32, image)
+                    makeQuad(32, 96, 32, 32)
                 },
                 speed = 0.1
             },
 
             jump = {
                 frames = {
-                    love.graphics.newQuad(0, 96, 32, 32, image)
+                    makeQuad(0, 96, 32, 32)
                 },
                 speed = 0.1
             },
             
             sit = {
                 frames = {
-                    love.graphics.newQuad(0,64,32,32, image),
-                    love.graphics.newQuad(32,64,32,32, image),
-                    love.graphics.newQuad(64,64,32,32, image),
-                    love.graphics.newQuad(96,64,32,32, image),
+                    makeQuad(0,64,32,32),
+                    makeQuad(32,64,32,32),
+                    makeQuad(64,64,32,32),
+                    makeQuad(96,64,32,32),
                 },
                 speed = 0.4
             },
 
             dash = {
                 frames = {
-                    love.graphics.newQuad(32, 32, 32, 32, image),
+                    makeQuad(32, 32, 32, 32),
                 },
                 speed = 0.1
             },
@@ -228,6 +236,7 @@ function Player.load()
     Camera.load()
 
     local hudFont = love.graphics.newFont("assets/fonts/PressStart2P-Regular.ttf", 15)
+    hudPowerupFont = love.graphics.newFont("assets/fonts/PressStart2P-Regular.ttf", 12)
 
     staminaBar = bar.new({
         label = "STA",
@@ -551,6 +560,15 @@ function Player.draw()
     local sprite = Components.Sprite[player]
     local anim = Components.Animation[player]
     
+    local activeOutline = nil
+    if PowerUps.isActive("InfinityHealth") then
+        activeOutline = {0.95, 0.2, 0.2}
+    elseif PowerUps.isActive("Jumper") then
+        activeOutline = {0.6, 0.25, 0.85}
+    elseif PowerUps.isActive("Speed") then
+        activeOutline = {0.2, 0.35, 0.95}
+    end
+
     if sprite and anim then
         local currentAnim = anim.animations[anim.current]
         if currentAnim and currentAnim.frames and currentAnim.frames[anim.frame] then
@@ -564,6 +582,26 @@ function Player.draw()
             local scaleX = sprite.scale * (sprite.flip and -1 or 1)
             local drawX = sprite.flip and (pos.x + col.w - offsetX) or (pos.x + offsetX)
             local drawY = pos.y + offsetY - 8
+
+            if activeOutline then
+                love.graphics.setColor(activeOutline[1], activeOutline[2], activeOutline[3], 0.95)
+                local offsets = {
+                    {-2, 0}, {2, 0}, {0, -2}, {0, 2},
+                    {-1, -1}, {1, -1}, {-1, 1}, {1, 1}
+                }
+
+                for _, offset in ipairs(offsets) do
+                    love.graphics.draw(
+                        sprite.image,
+                        frame,
+                        drawX + offset[1],
+                        drawY + offset[2],
+                        0,
+                        scaleX,
+                        sprite.scale
+                    )
+                end
+            end
             
             love.graphics.setColor(1, 1, 1, 1)
             love.graphics.draw(
@@ -600,6 +638,32 @@ function Player.drawHUD()
 
     if healthBar then
         healthBar:draw(60, 50)
+    end
+
+    local powerupName, timeLeft = PowerUps.getActive()
+    if powerupName then
+        local label = powerupName == "InfinityHealth" and "Health"
+            or powerupName == "Jumper" and "Jumper"
+            or powerupName == "Speed" and "Speed"
+            or powerupName
+
+        local color = powerupName == "InfinityHealth" and {0.95, 0.2, 0.2}
+            or powerupName == "Jumper" and {0.6, 0.25, 0.85}
+            or powerupName == "Speed" and {0.2, 0.35, 0.95}
+            or {1, 1, 1}
+
+        local text = label .. " " .. string.format("%.0f", math.max(0, timeLeft)) .. "s"
+        local x, y = 60, 78
+
+        love.graphics.setFont(hudPowerupFont)
+        love.graphics.setColor(0, 0, 0, 1)
+        for _, offset in ipairs({{-1, 0}, {1, 0}, {0, -1}, {0, 1}, {-1, -1}, {1, -1}, {-1, 1}, {1, 1}}) do
+            love.graphics.print(text, x + offset[1], y + offset[2])
+        end
+
+        love.graphics.setColor(color[1], color[2], color[3], 1)
+        love.graphics.print(text, x, y)
+        love.graphics.setFont(love.graphics.getFont())
     end
 end
 

@@ -3,11 +3,17 @@ local Platform = require("entities.Platform")
 local PowerUps = {}
 
 local Image = love.graphics.newImage("assets/images/fruits.png")
+Image:setFilter("nearest", "nearest")
+Image:setWrap("clamp", "clamp")
+
+local function makeQuad(x, y, w, h)
+    return love.graphics.newQuad(x, y, w, h, Image:getWidth(), Image:getHeight())
+end
 
 PowerUps.types = {
     InfinityHealth = {
-        quad = love.graphics.newQuad(0, 0, 64, 64, Image:getWidth(), Image:getHeight()),
-        duration = 10,
+        quad = makeQuad(0, 0, 64, 64),
+        duration = 12,
         onApply = function(player)
             player.invincible = true
         end,
@@ -17,8 +23,8 @@ PowerUps.types = {
     },
 
     Speed = {
-        quad = love.graphics.newQuad(64, 0, 64, 64, Image:getWidth(), Image:getHeight()),
-        duration = 6,
+        quad = makeQuad(0, 64, 64, 64),
+        duration = 9,
         onApply = function(player)
             player.speed = player.baseSpeed * 1.8
         end,
@@ -28,8 +34,8 @@ PowerUps.types = {
     },
 
     Jumper = {
-        quad = love.graphics.newQuad(0, 64, 64, 64, Image:getWidth(), Image:getHeight()),
-        duration = 8,
+        quad = makeQuad(64, 0, 64, 64),
+        duration = 10,
         onApply = function(player)
             player.jumpBoost = 1.4
         end,
@@ -82,11 +88,7 @@ function PowerUps.spawn(name, x, y, opts)
 end
 
 function PowerUps.getRandom()
-    local names = {}
-    for name in pairs(PowerUps.types) do
-        table.insert(names, name)
-    end
-
+    local names = {"InfinityHealth", "Speed", "Jumper"}
     if #names == 0 then return nil end
     return names[math.random(1, #names)]
 end
@@ -174,6 +176,13 @@ end
 
 function PowerUps.isActive(name)
     return PowerUps.active[name] ~= nil
+end
+
+function PowerUps.getActive()
+    for name, active in pairs(PowerUps.active) do
+        return name, active.timeLeft
+    end
+    return nil, 0
 end
 
 function PowerUps.getTimeLeft(name)
